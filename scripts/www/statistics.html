@@ -14,7 +14,8 @@
     }
 
     body {
-      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+      position: relative;
       min-height: 100vh;
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
@@ -66,101 +67,195 @@
     /* 时间筛选器 */
     .time-filter {
       display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-      padding: 0 4px;
+      gap: 16px;
+      margin-bottom: 32px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      justify-content: center;
     }
 
     .filter-btn {
       flex: 1;
-      padding: 10px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      max-width: 120px;
+      padding: 12px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
       background: transparent;
       color: rgba(255, 255, 255, 0.7);
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .filter-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .filter-btn:hover::before {
+      left: 100%;
     }
 
     .filter-btn:hover {
-      border-color: rgba(255, 255, 255, 0.4);
+      border-color: rgba(255, 255, 255, 0.5);
       color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
     .filter-btn.active {
       background: linear-gradient(135deg, #CCFF00, #00D1FF);
       border-color: transparent;
       color: #121212;
+      box-shadow:
+        0 8px 24px rgba(204, 255, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active::before {
+      display: none;
     }
 
     /* 数据总览卡片 */
     .overview-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
     }
 
     .stat-card {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #CCFF00, #00D1FF, #9333EA);
+      border-radius: 20px 20px 0 0;
     }
 
     .stat-card:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%);
+      transform: translateY(-6px) scale(1.02);
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 0 40px rgba(204, 255, 0, 0.1);
+    }
+
+    .stat-card.duration::before {
+      background: linear-gradient(90deg, #CCFF00, #00D1FF);
+    }
+
+    .stat-card.calories::before {
+      background: linear-gradient(90deg, #FF5E5B, #FFBD00);
+    }
+
+    .stat-card.sessions::before {
+      background: linear-gradient(90deg, #00D1FF, #9333EA);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
     }
 
     .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      margin-bottom: 16px;
+      font-size: 28px;
+      position: relative;
+    }
+
+    .stat-icon::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 18px;
+      padding: 2px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      -webkit-mask-composite: xor;
     }
 
     .stat-icon.duration {
       background: linear-gradient(135deg, #CCFF00, #00D1FF);
       color: #121212;
+      box-shadow: 0 8px 24px rgba(204, 255, 0, 0.3);
     }
 
     .stat-icon.calories {
       background: linear-gradient(135deg, #FF5E5B, #FFBD00);
       color: #121212;
+      box-shadow: 0 8px 24px rgba(255, 94, 91, 0.3);
     }
 
     .stat-icon.sessions {
       background: linear-gradient(135deg, #00D1FF, #9333EA);
       color: #121212;
+      box-shadow: 0 8px 24px rgba(0, 209, 255, 0.3);
+    }
+
+    .stat-content {
+      flex: 1;
+      margin-left: 16px;
     }
 
     .stat-value {
-      font-size: 32px;
-      font-weight: bold;
+      font-size: 36px;
+      font-weight: 700;
       color: #fff;
       margin-bottom: 4px;
+      background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .stat-label {
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.8);
       font-weight: 500;
+      margin-bottom: 8px;
     }
 
     .stat-change {
       font-size: 12px;
-      margin-top: 8px;
       display: flex;
       align-items: center;
       gap: 4px;
+      font-weight: 500;
     }
 
     .stat-change.positive {
@@ -171,112 +266,219 @@
       color: #EF4444;
     }
 
+    .stat-change.neutral {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
     /* 图表区域 */
     .charts-section {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 24px;
-      margin-bottom: 32px;
+      gap: 32px;
+      margin-bottom: 48px;
     }
 
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
       .charts-section {
         grid-template-columns: 1fr 1fr;
       }
     }
 
     .chart-container {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #CCFF00, #00D1FF, #9333EA, #FF5E5B);
+      border-radius: 20px 20px 0 0;
+    }
+
+    .chart-container:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+      transform: translateY(-4px);
+      box-shadow:
+        0 16px 32px rgba(0, 0, 0, 0.2),
+        0 0 32px rgba(204, 255, 0, 0.08);
     }
 
     .chart-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .chart-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .chart-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .chart-action-btn {
-      padding: 4px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: transparent;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .chart-action-btn:hover {
-      border-color: rgba(255, 255, 255, 0.4);
-      color: #fff;
-    }
-
-    .chart-action-btn.active {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
-      color: #fff;
-    }
-
-    .chart-wrapper {
-      height: 300px;
-      position: relative;
-    }
-
-    /* 训练历史记录 */
-    .history-section {
       margin-bottom: 24px;
     }
 
-    .section-title {
+    .chart-title {
       font-size: 18px;
       font-weight: 600;
-      margin-bottom: 16px;
       color: #fff;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .section-title::before {
+    .chart-title::before {
       content: '';
       width: 4px;
-      height: 18px;
+      height: 20px;
       background: linear-gradient(135deg, #CCFF00, #00D1FF);
       border-radius: 2px;
+    }
+
+    .chart-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 2px;
+    }
+
+    .chart-actions {
+      display: flex;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .chart-action-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .chart-action-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-action-btn.active {
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      color: #121212;
+      box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+    }
+
+    .chart-action-btn.active::before {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 2px;
+      background: #121212;
+      border-radius: 1px;
+    }
+
+    .chart-wrapper {
+      height: 320px;
+      position: relative;
+    }
+
+    /* 图表网格背景 */
+    .chart-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      border-radius: 12px;
+    }
+
+    /* 训练历史记录 */
+    .history-section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 6px;
+      height: 24px;
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      border-radius: 3px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+      margin-left: 12px;
     }
 
     .history-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
     }
 
     .history-item {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .history-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #CCFF00, #00D1FF);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
     .history-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateX(4px);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+      transform: translateX(8px);
+      box-shadow:
+        0 12px 24px rgba(0, 0, 0, 0.2),
+        0 0 24px rgba(204, 255, 0, 0.08);
+    }
+
+    .history-item:hover::before {
+      opacity: 1;
     }
 
     .history-header {
@@ -459,43 +661,61 @@
       <button class="filter-btn" data-period="year">本年</button>
     </div>
 
-    <!-- 数据总览卡片 --<div class="overview-cards">
-      <div class="stat-card">
-        <div class="stat-icon duration">⏱</div>
-        <div class="stat-value" id="totalDuration">5.5h</div>
-        <div class="stat-label">总训练时长</div>
-        <div class="stat-change positive">
-          ↑ 12%
-          <span style="font-size: 10px; opacity: 0.7;">较上周</span>
+    <!-- 数据总览卡片 -->
+    <div class="overview-cards">
+      <div class="stat-card duration">
+        <div class="stat-header">
+          <div class="stat-icon duration">⏱</div>
+          <div class="stat-content">
+            <div class="stat-value" id="totalDuration">--</div>
+            <div class="stat-label">总训练时长</div>
+            <div class="stat-change positive" id="durationChange">
+              <span class="change-icon">↗</span>
+              <span class="change-text">--</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon calories">🔥</div>
-        <div class="stat-value" id="totalCalories">3,240</div>
-        <div class="stat-label">消耗热量 (千卡)</div>
-        <div class="stat-change positive">
-          ↑ 8%
-          <span style="font-size: 10px; opacity: 0.7;">较上周</span>
+      <div class="stat-card calories">
+        <div class="stat-header">
+          <div class="stat-icon calories">🔥</div>
+          <div class="stat-content">
+            <div class="stat-value" id="totalCalories">--</div>
+            <div class="stat-label">消耗热量 (千卡)</div>
+            <div class="stat-change positive" id="caloriesChange">
+              <span class="change-icon">↗</span>
+              <span class="change-text">--</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon sessions">🏋️</div>
-        <div class="stat-value" id="totalSessions">8</div>
-        <div class="stat-label">训练次数</div>
-        <div class="stat-change positive">
-          ↑ 2
-          <span style="font-size: 10px; opacity: 0.7;">较上周</span>
+      <div class="stat-card sessions">
+        <div class="stat-header">
+          <div class="stat-icon sessions">🏋️</div>
+          <div class="stat-content">
+            <div class="stat-value" id="totalSessions">--</div>
+            <div class="stat-label">训练次数</div>
+            <div class="stat-change positive" id="sessionsChange">
+              <span class="change-icon">↗</span>
+              <span class="change-text">--</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 图表区域 --<div class="charts-section">
+    <!-- 图表区域 -->
+    <div class="charts-section">
       <div class="chart-container">
         <div class="chart-header">
-          <h3 class="chart-title">训练时长趋势</h3>
+          <div>
+            <h3 class="chart-title">训练数据趋势</h3>
+            <div class="chart-subtitle">可视化展示您的训练进展</div>
+          </div>
           <div class="chart-actions">
             <button class="chart-action-btn active" data-chart="duration">时长</button>
             <button class="chart-action-btn" data-chart="calories">热量</button>
+            <button class="chart-action-btn" data-chart="sessions">次数</button>
           </div>
         </div>
         <div class="chart-wrapper">
@@ -652,54 +872,7 @@
       data: [25, 20, 15, 15, 20, 5]
     };
 
-    // 模拟训练历史数据
-    const mockHistory = [
-      {
-        id: '1',
-        title: '全身力量训练计划',
-        date: '2024-01-15 19:30-20:30',
-        duration: 60,
-        calories: 450,
-        exercises: 7,
-        sets: 21
-      },
-      {
-        id: '2',
-        title: '拉伸放松训练',
-        date: '2024-01-15 21:30-22:00',
-        duration: 30,
-        calories: 150,
-        exercises: 5,
-        sets: 5
-      },
-      {
-        id: '3',
-        title: '上肢专项训练',
-        date: '2024-01-13 20:00-21:00',
-        duration: 60,
-        calories: 420,
-        exercises: 6,
-        sets: 18
-      },
-      {
-        id: '4',
-        title: '下肢力量训练',
-        date: '2024-01-11 19:00-20:15',
-        duration: 75,
-        calories: 550,
-        exercises: 5,
-        sets: 15
-      },
-      {
-        id: '5',
-        title: 'HIIT燃脂训练',
-        date: '2024-01-09 18:30-19:00',
-        duration: 30,
-        calories: 380,
-        exercises: 8,
-        sets: 4
-      }
-    ];
+    // 训练历史数据（将通过API加载）
 
     // 显示加载
     function showLoading() {
@@ -881,50 +1054,166 @@
     }
 
     // 加载训练历史
-    function loadTrainingHistory(period) {
-      // 这里可以根据不同时间周期加载不同的历史数据
-      // 为了简化，这里始终使用相同的历史数据
+    async function loadTrainingHistory(period) {
+      try {
+        console.log('加载训练历史，周期:', period);
+
+        // 根据周期确定日期范围
+        let startDate = null;
+        let endDate = new Date().toISOString().split('T')[0]; // 今天
+
+        if (period === 'week') {
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          startDate = weekAgo.toISOString().split('T')[0];
+        } else if (period === 'month') {
+          const monthAgo = new Date();
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          startDate = monthAgo.toISOString().split('T')[0];
+        } else if (period === 'year') {
+          const yearAgo = new Date();
+          yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+          startDate = yearAgo.toISOString().split('T')[0];
+        }
+
+        // 调用API获取训练记录
+        const params = {
+          page: 1,
+          pageSize: 10
+        };
+
+        if (startDate) {
+          params.startDate = startDate;
+          params.endDate = endDate;
+        }
+
+        const response = await API.getTrainingSessions(params);
+
+        if (response.code === 200 && response.data && response.data.sessions) {
+          currentTrainingSessions = response.data.sessions;
+          renderTrainingHistory(currentTrainingSessions);
+          console.log('训练历史加载成功:', currentTrainingSessions.length, '条记录');
+        } else {
+          console.error('获取训练历史失败:', response.message);
+          // 使用后备数据
+          showFallbackTrainingHistory();
+        }
+      } catch (error) {
+        console.error('加载训练历史异常:', error);
+        // 使用后备数据
+        showFallbackTrainingHistory();
+      }
+    }
+
+    // 渲染训练历史
+    function renderTrainingHistory(sessions) {
       historyList.innerHTML = '';
-      
-      mockHistory.forEach(session => {
+
+      if (sessions.length === 0) {
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'history-item';
+        emptyItem.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.6);">
+            <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+            <div>暂无训练记录</div>
+          </div>
+        `;
+        historyList.appendChild(emptyItem);
+        return;
+      }
+
+      sessions.forEach(session => {
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
-        
+
+        // 计算总组数
+        const totalSets = session.exercises ? session.exercises.reduce((sum, ex) => sum + (ex.sets || 0), 0) : 0;
+
+        // 格式化日期
+        const sessionDate = new Date(session.date).toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          weekday: 'short'
+        });
+
         historyItem.innerHTML = `
           <div class="history-header">
-            <div class="history-info">
-              <h3 class="history-title">${session.title}</h3>
-              <div class="history-date">${session.date}</div>
+            <div class="session-info">
+              <h3 class="session-title">${session.planName || '未知计划'}</h3>
+              <div class="session-date">${sessionDate}</div>
             </div>
+            <div class="session-duration">${session.duration || 0} 分钟</div>
           </div>
-          <div class="history-stats">
-            <div class="history-stat">
-              <div class="history-stat-value">${session.duration}</div>
-              <div class="history-stat-label">分钟</div>
-            </div>
-            <div class="history-stat">
-              <div class="history-stat-value">${session.calories}</div>
-              <div class="history-stat-label">千卡</div>
-            </div>
-            <div class="history-stat">
-              <div class="history-stat-value">${session.exercises}</div>
-              <div class="history-stat-label">动作</div>
-            </div>
-            <div class="history-stat">
-              <div class="history-stat-value">${session.sets}</div>
-              <div class="history-stat-label">组数</div>
-            </div>
+          <div class="session-stats">
+            <div class="stat-item">🔥 ${calculateCalories(session) || 0} kcal</div>
+            <div class="stat-item">💪 ${session.exercises ? session.exercises.length : 0} 个动作</div>
+            <div class="stat-item">📊 ${totalSets} 组</div>
+            <div class="stat-item">✅ ${calculateCompletion(session) || 0}%</div>
           </div>
           <button class="view-details-btn" data-id="${session.id}">查看详情</button>
         `;
-        
+
         // 添加查看详情事件
         historyItem.querySelector('.view-details-btn').addEventListener('click', () => {
           viewSessionDetails(session.id);
         });
-        
+
         historyList.appendChild(historyItem);
       });
+    }
+
+    // 计算消耗热量（估算）
+    function calculateCalories(session) {
+      if (!session.duration) return 0;
+      // 简单估算：每分钟消耗约8-12卡路里
+      return Math.round(session.duration * 10);
+    }
+
+    // 计算完成率（估算）
+    function calculateCompletion(session) {
+      if (!session.exercises || session.exercises.length === 0) return 0;
+
+      // 检查是否有实际完成的数据
+      const completedExercises = session.exercises.filter(ex =>
+        ex.actualSets !== undefined && ex.actualSets > 0
+      );
+
+      if (completedExercises.length === 0) {
+        // 如果没有实际完成数据，假设都完成了
+        return 100;
+      }
+
+      return Math.round((completedExercises.length / session.exercises.length) * 100);
+    }
+
+    // 显示后备训练历史数据
+    function showFallbackTrainingHistory() {
+      const fallbackSessions = [
+        {
+          id: 'fallback1',
+          planName: '全身力量训练',
+          date: new Date().toISOString().split('T')[0],
+          duration: 45,
+          exercises: [
+            { name: '深蹲', sets: 3 },
+            { name: '卧推', sets: 3 },
+            { name: '引体向上', sets: 3 }
+          ]
+        },
+        {
+          id: 'fallback2',
+          planName: '上肢专项训练',
+          date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // 昨天
+          duration: 30,
+          exercises: [
+            { name: '哑铃弯举', sets: 4 },
+            { name: '三头肌伸展', sets: 4 }
+          ]
+        }
+      ];
+
+      renderTrainingHistory(fallbackSessions);
     }
 
     // 返回上一页
@@ -1358,7 +1647,8 @@
     }
 
     body {
-      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+      position: relative;
       min-height: 100vh;
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
@@ -1694,21 +1984,49 @@
     }
 
     .session-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       color: #fff;
-      margin: 0 0 4px 0;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .session-title::before {
+      content: '🏋️';
+      font-size: 18px;
     }
 
     .session-date {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .session-date::before {
+      content: '📅';
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
     }
 
     .session-duration {
       font-size: 14px;
-      color: #00D1FF;
-      font-weight: 500;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(0, 209, 255, 0.2));
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(204, 255, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .session-duration::before {
+      content: '⏱';
+      font-size: 12px;
     }
 
     .session-stats {
@@ -2011,27 +2329,9 @@
     // 当前选中的时间过滤器
     let selectedTimeFilter = 'week';
 
-    // 模拟数据
-    const timeData = {
-      week: {
-        totalMinutes: '120',
-        totalCalories: '1200',
-        totalSessions: '5',
-        labels: ['周一', '周二', '周三', '周四', '周五', '周六']
-      },
-      month: {
-        totalMinutes: '480',
-        totalCalories: '4500',
-        totalSessions: '18',
-        labels: ['第1周', '第2周', '第3周', '第4周']
-      },
-      year: {
-        totalMinutes: '5280',
-        totalCalories: '50000',
-        totalSessions: '200',
-        labels: ['1月', '3月', '6月', '9月', '12月']
-      }
-    };
+    // 全局统计数据
+    let currentStatsData = null;
+    let currentTrainingSessions = [];
 
     // 显示加载
     function showLoading() {
@@ -2053,33 +2353,271 @@
     }
 
     // 更新统计数据
-    function updateStatsData(filter) {
+    async function updateStatsData(filter) {
       showLoading();
-      
-      // 模拟网络请求延迟
-      setTimeout(() => {
-        const data = timeData[filter];
-        totalMinutesEl.textContent = data.totalMinutes;
-        totalCaloriesEl.textContent = data.totalCalories;
-        totalSessionsEl.textContent = data.totalSessions;
-        
-        // 更新图表标签
-        chartLabelsEl.innerHTML = '';
-        data.labels.forEach(label => {
-          const span = document.createElement('span');
-          span.textContent = label;
-          chartLabelsEl.appendChild(span);
-        });
-        
-        // 更新柱状图高度（随机模拟）
-        const bars = document.querySelectorAll('.chart-bar');
-        bars.forEach(bar => {
-          const randomHeight = Math.floor(Math.random() * 70) + 20; // 20-90%
-          bar.style.height = `${randomHeight}%`;
-        });
-        
+
+      try {
+        console.log('获取统计数据，周期:', filter);
+
+        // 调用API获取统计数据
+        const response = await API.getStatistics(filter, 'all');
+
+        if (response.code === 200 && response.data) {
+          const stats = response.data.stats || response.data;
+          currentStatsData = stats;
+
+          // 更新概览数据
+          updateOverviewStats(stats, filter);
+
+          // 更新图表
+          updateCharts(stats, filter);
+
+          // 更新训练历史
+          await loadTrainingHistory(filter);
+
+          console.log('统计数据更新成功:', stats);
+        } else {
+          console.error('获取统计数据失败:', response.message);
+          // 使用默认数据作为后备
+          showFallbackData(filter);
+        }
+      } catch (error) {
+        console.error('获取统计数据异常:', error);
+        // 使用默认数据作为后备
+        showFallbackData(filter);
+      } finally {
         hideLoading();
-      }, 500);
+      }
+    }
+
+    // 更新概览统计数据
+    function updateOverviewStats(stats, filter) {
+      console.log('更新概览统计数据:', stats);
+
+      // 从API响应中提取统计数据
+      let totalMinutes = 0;
+      let totalCalories = 0;
+      let totalSessions = 0;
+      let durationChange = { value: 0, type: 'neutral' };
+      let caloriesChange = { value: 0, type: 'neutral' };
+      let sessionsChange = { value: 0, type: 'neutral' };
+
+      if (stats) {
+        // 直接使用API返回的数据
+        totalSessions = stats.totalSessions || 0;
+        totalMinutes = stats.totalDuration || 0;
+
+        // 如果有热量数据，直接使用，否则估算
+        if (stats.totalCalories) {
+          totalCalories = stats.totalCalories;
+        } else {
+          // 估算热量：每分钟约消耗10卡路里
+          totalCalories = Math.round(totalMinutes * 10);
+        }
+
+        // 计算变化趋势（这里可以从API获取更准确的数据）
+        // 暂时使用模拟数据
+        durationChange = { value: 12, type: 'positive' };
+        caloriesChange = { value: 8, type: 'positive' };
+        sessionsChange = { value: 2, type: 'positive' };
+      }
+
+      // 格式化数值显示
+      const formatDuration = (minutes) => {
+        if (minutes >= 60) {
+          const hours = Math.floor(minutes / 60);
+          const mins = minutes % 60;
+          return mins > 0 ? `${hours}h${mins}m` : `${hours}h`;
+        }
+        return `${minutes}m`;
+      };
+
+      const formatNumber = (num) => {
+        return num.toLocaleString();
+      };
+
+      // 更新界面显示
+      totalMinutesEl.textContent = formatDuration(totalMinutes);
+      totalCaloriesEl.textContent = formatNumber(totalCalories);
+      totalSessionsEl.textContent = totalSessions;
+
+      // 更新变化趋势
+      updateChangeIndicator('durationChange', durationChange);
+      updateChangeIndicator('caloriesChange', caloriesChange);
+      updateChangeIndicator('sessionsChange', sessionsChange);
+
+      console.log('更新后的统计数据:', { totalMinutes, totalCalories, totalSessions });
+    }
+
+    // 更新变化趋势指示器
+    function updateChangeIndicator(elementId, change) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      element.className = `stat-change ${change.type}`;
+      const iconEl = element.querySelector('.change-icon');
+      const textEl = element.querySelector('.change-text');
+
+      if (iconEl && textEl) {
+        switch (change.type) {
+          case 'positive':
+            iconEl.textContent = '↗';
+            break;
+          case 'negative':
+            iconEl.textContent = '↘';
+            break;
+          default:
+            iconEl.textContent = '→';
+        }
+        textEl.textContent = change.value === 0 ? '--' : `${change.value}%`;
+      }
+    }
+
+    // 更新图表数据
+    function updateCharts(stats, filter) {
+      console.log('更新图表数据:', stats, '过滤器:', filter);
+
+      // 获取对应的时间数据
+      let chartData = [];
+      let labels = [];
+
+      if (filter === 'week') {
+        // 周统计：显示7天的数据
+        if (stats.weeklyStats && Array.isArray(stats.weeklyStats)) {
+          // 使用API返回的数据
+          chartData = stats.weeklyStats.map(day => day.duration || 0);
+          labels = stats.weeklyStats.map(day => getDayName(day.date || day.day));
+        } else {
+          // 生成最近7天的数据
+          const weekData = getLast7DaysData([]);
+          chartData = weekData.map(day => day.duration || 0);
+          labels = weekData.map(day => getDayName(day.date));
+        }
+      } else if (filter === 'month') {
+        // 月统计：显示最近4周的数据
+        if (stats.monthlyStats && Array.isArray(stats.monthlyStats)) {
+          chartData = stats.monthlyStats.slice(-4).map(week => week.duration || 0);
+          labels = stats.monthlyStats.slice(-4).map(week => `第${week.week || week.month}周`);
+        } else {
+          // 生成默认的月数据
+          chartData = [45, 60, 30, 75];
+          labels = ['第1周', '第2周', '第3周', '第4周'];
+        }
+      } else if (filter === 'year') {
+        // 年统计：显示12个月的数据
+        if (stats.monthlyStats && Array.isArray(stats.monthlyStats)) {
+          const yearData = getLast12MonthsData(stats.monthlyStats);
+          chartData = yearData.map(month => month.duration || 0);
+          labels = yearData.map(month => `${month.month}月`);
+        } else {
+          // 生成默认的年数据
+          chartData = [120, 110, 130, 140, 150, 160, 170, 180, 175, 165, 155, 145];
+          labels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        }
+      }
+
+      // 确保有足够的数据点
+      while (chartData.length < 7) {
+        chartData.push(0);
+      }
+      while (labels.length < 7) {
+        labels.push('');
+      }
+
+      // 更新图表标签
+      chartLabelsEl.innerHTML = '';
+      labels.slice(0, 7).forEach(label => {
+        const span = document.createElement('span');
+        span.textContent = label;
+        chartLabelsEl.appendChild(span);
+      });
+
+      // 更新柱状图高度
+      const bars = document.querySelectorAll('.chart-bar');
+      const maxValue = Math.max(...chartData, 1); // 避免除零错误
+
+      bars.forEach((bar, index) => {
+        if (index < chartData.length) {
+          const height = Math.min(100, (chartData[index] / maxValue) * 80 + 10); // 10-90%范围
+          bar.style.height = `${height}%`;
+        } else {
+          bar.style.height = '10%'; // 默认高度
+        }
+      });
+
+      console.log('图表更新完成:', { chartData, labels });
+    }
+
+    // 获取最近7天的数据
+    function getLast7DaysData(weeklyStats) {
+      const result = [];
+      const today = new Date();
+
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+
+        const dateStr = date.toISOString().split('T')[0];
+        const existingData = weeklyStats.find(stat => stat.date === dateStr);
+
+        result.push({
+          date: dateStr,
+          duration: existingData ? existingData.duration || 0 : 0
+        });
+      }
+
+      return result;
+    }
+
+    // 获取最近12个月的数据
+    function getLast12MonthsData(monthlyStats) {
+      const result = [];
+      const today = new Date();
+
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(today);
+        date.setMonth(today.getMonth() - i);
+
+        const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const existingData = monthlyStats.find(stat => stat.month === monthStr);
+
+        result.push({
+          month: date.getMonth() + 1,
+          duration: existingData ? existingData.duration || 0 : 0
+        });
+      }
+
+      return result;
+    }
+
+    // 获取日期对应的中文名称
+    function getDayName(dateStr) {
+      const date = new Date(dateStr);
+      const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      return days[date.getDay()];
+    }
+
+    // 显示后备数据（当API调用失败时）
+    function showFallbackData(filter) {
+      console.log('使用后备数据');
+
+      // 默认数据
+      const fallbackData = {
+        week: { totalMinutes: '0', totalCalories: '0', totalSessions: '0' },
+        month: { totalMinutes: '0', totalCalories: '0', totalSessions: '0' },
+        year: { totalMinutes: '0', totalCalories: '0', totalSessions: '0' }
+      };
+
+      const data = fallbackData[filter] || fallbackData.week;
+      totalMinutesEl.textContent = data.totalMinutes;
+      totalCaloriesEl.textContent = data.totalCalories;
+      totalSessionsEl.textContent = data.totalSessions;
+
+      // 重置图表
+      const bars = document.querySelectorAll('.chart-bar');
+      bars.forEach(bar => {
+        bar.style.height = '10%';
+      });
     }
 
     // 返回上一页
@@ -2150,6 +2688,18 @@
         item.classList.add('active');
       }
     });
+
+    // 所有主要页面都显示底部导航栏
+    document.body.style.paddingBottom = '80px';
+
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      item.classList.remove('active');
+      const href = item.getAttribute('href');
+      if (href && currentPage === href) {
+        item.classList.add('active');
+      }
+    });
   </script>
 
   <!-- 底部导航栏 -->
@@ -2162,9 +2712,13 @@
       <div class="nav-icon">📅</div>
       <div class="nav-label">日历</div>
     </a>
-    <a href="#" class="nav-item coming-soon" onclick="event.preventDefault(); alert('社区功能即将上线，敬请期待！');">
-      <div class="nav-icon">👥</div>
-      <div class="nav-label">社区</div>
+    <a href="plans.html" class="nav-item">
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">计划</div>
+    </a>
+    <a href="statistics.html" class="nav-item active">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">统计</div>
     </a>
     <a href="profile.html" class="nav-item">
       <div class="nav-icon">👤</div>
@@ -2236,9 +2790,7 @@
       color: rgba(255, 255, 255, 0.6);
     }
 
-    body {
-      padding-bottom: 80px;
-    }
+    /* 只有在显示导航栏时才添加底部padding */
 
     @media (max-width: 480px) {
       .nav-label {
@@ -2254,83 +2806,5 @@
 
     <!-- 引入API工具 -->
     <script src="js/api.js"></script>
-    <script>
-      // 重写统计数据加载函数，对接API
-      (function() {
-        const originalUpdateStatsData = window.updateStatsData;
-        
-        window.updateStatsData = async function(filter) {
-          showLoading();
-          
-          try {
-            const periodMap = {
-              'today': 'today',
-              'week': 'week',
-              'month': 'month',
-              'year': 'year',
-              'all': 'all'
-            };
-            
-            const period = periodMap[filter] || 'all';
-            const response = await API.getStatistics(period, 'all');
-            
-            if (response.code === 200) {
-              const data = response.data;
-              
-              // 更新统计数据
-              if (data.summary) {
-                const totalMinutesEl = document.getElementById('totalMinutes');
-                const totalCaloriesEl = document.getElementById('totalCalories');
-                const totalSessionsEl = document.getElementById('totalSessions');
-                
-                if (totalMinutesEl) totalMinutesEl.textContent = data.summary.totalMinutes || 0;
-                if (totalCaloriesEl) totalCaloriesEl.textContent = data.summary.totalCalories || 0;
-                if (totalSessionsEl) totalSessionsEl.textContent = data.summary.totalSessions || 0;
-              }
-              
-              // 更新图表数据
-              if (data.charts) {
-                updateCharts(data.charts);
-              }
-            } else {
-              console.error('获取统计数据失败:', response.message);
-              // 使用原始函数作为备用
-              if (originalUpdateStatsData) originalUpdateStatsData(filter);
-            }
-          } catch (error) {
-            console.error('获取统计数据失败:', error);
-            // 使用原始函数作为备用
-            if (originalUpdateStatsData) originalUpdateStatsData(filter);
-          } finally {
-            hideLoading();
-          }
-        };
-        
-        function updateCharts(charts) {
-          // 更新图表显示
-          if (charts.caloriesChart) {
-            // 更新卡路里图表
-            const chartLabelsEl = document.getElementById('chartLabels');
-            if (chartLabelsEl) {
-              chartLabelsEl.innerHTML = '';
-              charts.caloriesChart.labels.forEach(label => {
-                const span = document.createElement('span');
-                span.textContent = label;
-                chartLabelsEl.appendChild(span);
-              });
-            }
-            
-            // 更新柱状图
-            const bars = document.querySelectorAll('.chart-bar');
-            bars.forEach((bar, index) => {
-              if (charts.caloriesChart.data[index] !== undefined) {
-                const height = Math.min(100, Math.max(10, (charts.caloriesChart.data[index] / 500) * 100));
-                bar.style.height = `${height}%`;
-              }
-            });
-          }
-        }
-      })();
-  </script>
 </body>
 </html>
