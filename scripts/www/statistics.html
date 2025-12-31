@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据统计 - 健身助手</title>
+  <!-- 引入Chart.js用于图表展示 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* 顶部导航栏 */
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      margin-bottom: 24px;
+      position: sticky;
+      top: 0;
+      background: rgba(10, 10, 26, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0 0 0 20px;
+    }
+
+    /* 主容器 */
+    .stats-container {
+      padding: 0 20px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 时间筛选器 */
+    .time-filter {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 0 4px;
+    }
+
+    .filter-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      border-color: transparent;
+      color: #121212;
+    }
+
+    /* 数据总览卡片 */
+    .overview-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .stat-icon.duration {
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      color: #121212;
+    }
+
+    .stat-icon.calories {
+      background: linear-gradient(135deg, #FF5E5B, #FFBD00);
+      color: #121212;
+    }
+
+    .stat-icon.sessions {
+      background: linear-gradient(135deg, #00D1FF, #9333EA);
+      color: #121212;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+    }
+
+    .stat-change {
+      font-size: 12px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-change.positive {
+      color: #22C55E;
+    }
+
+    .stat-change.negative {
+      color: #EF4444;
+    }
+
+    /* 图表区域 */
+    .charts-section {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (min-width: 768px) {
+      .charts-section {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .chart-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .chart-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chart-action-btn {
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .chart-action-btn:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+    }
+
+    .chart-action-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+
+    .chart-wrapper {
+      height: 300px;
+      position: relative;
+    }
+
+    /* 训练历史记录 */
+    .history-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      border-radius: 2px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(4px);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .history-info {
+      flex: 1;
+    }
+
+    .history-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 4px 0;
+    }
+
+    .history-date {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .history-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .history-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+    }
+
+    .history-stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .history-stat-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .view-details-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 8px;
+    }
+
+    .view-details-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* 加载动画 */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 26, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: #00D1FF;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 提示弹窗 */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      display: none;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .stats-container {
+        padding: 0 16px 40px;
+      }
+      
+      .overview-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .charts-section {
+        grid-template-columns: 1fr;
+      }
+      
+      .chart-wrapper {
+        height: 250px;
+      }
+      
+      .history-stats {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-container {
+        padding: 0 12px 40px;
+      }
+      
+      .header {
+        padding: 16px 12px;
+      }
+      
+      .page-title {
+        font-size: 18px;
+        margin-left: 16px;
+      }
+      
+      .stat-value {
+        font-size: 28px;
+      }
+      
+      .chart-wrapper {
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 加载动画 -->
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- 提示弹窗 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 顶部导航栏 -->
+  <header class="header">
+    <button class="back-btn" id="backBtn">←</button>
+    <h1 class="page-title">数据统计</h1>
+  </header>
+
+  <div class="stats-container">
+    <!-- 时间筛选器 -->
+    <div class="time-filter">
+      <button class="filter-btn active" data-period="week">本周</button>
+      <button class="filter-btn" data-period="month">本月</button>
+      <button class="filter-btn" data-period="year">本年</button>
+    </div>
+
+    <!-- 数据总览卡片 --<div class="overview-cards">
+      <div class="stat-card">
+        <div class="stat-icon duration">⏱</div>
+        <div class="stat-value" id="totalDuration">5.5h</div>
+        <div class="stat-label">总训练时长</div>
+        <div class="stat-change positive">
+          ↑ 12%
+          <span style="font-size: 10px; opacity: 0.7;">较上周</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon calories">🔥</div>
+        <div class="stat-value" id="totalCalories">3,240</div>
+        <div class="stat-label">消耗热量 (千卡)</div>
+        <div class="stat-change positive">
+          ↑ 8%
+          <span style="font-size: 10px; opacity: 0.7;">较上周</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon sessions">🏋️</div>
+        <div class="stat-value" id="totalSessions">8</div>
+        <div class="stat-label">训练次数</div>
+        <div class="stat-change positive">
+          ↑ 2
+          <span style="font-size: 10px; opacity: 0.7;">较上周</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 图表区域 --<div class="charts-section">
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">训练时长趋势</h3>
+          <div class="chart-actions">
+            <button class="chart-action-btn active" data-chart="duration">时长</button>
+            <button class="chart-action-btn" data-chart="calories">热量</button>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="durationChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">肌肉群训练分布</h3>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="muscleGroupChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 训练历史记录 --<section class="history-section">
+      <h2 class="section-title">最近训练记录</h2>
+      <div class="history-list" id="historyList">
+        <div class="history-item">
+          <div class="history-header">
+            <div class="history-info">
+              <h3 class="history-title">全身力量训练计划</h3>
+              <div class="history-date">2024-01-15 19:30-20:30</div>
+            </div>
+          </div>
+          <div class="history-stats">
+            <div class="history-stat">
+              <div class="history-stat-value">60</div>
+              <div class="history-stat-label">分钟</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">450</div>
+              <div class="history-stat-label">千卡</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">7</div>
+              <div class="history-stat-label">动作</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">21</div>
+              <div class="history-stat-label">组数</div>
+            </div>
+          </div>
+          <button class="view-details-btn" data-id="1">查看详情</button>
+        </div>
+        <div class="history-item">
+          <div class="history-header">
+            <div class="history-info">
+              <h3 class="history-title">拉伸放松训练</h3>
+              <div class="history-date">2024-01-15 21:30-22:00</div>
+            </div>
+          </div>
+          <div class="history-stats">
+            <div class="history-stat">
+              <div class="history-stat-value">30</div>
+              <div class="history-stat-label">分钟</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">150</div>
+              <div class="history-stat-label">千卡</div>
+            <div class="history-stat">
+              <div class="history-stat-value">5</div>
+              <div class="history-stat-label">动作</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">5</div>
+              <div class="history-stat-label">组数</div>
+            </div>
+          </div>
+          <button class="view-details-btn" data-id="2">查看详情</button>
+        </div>
+        <div class="history-item">
+          <div class="history-header">
+            <div class="history-info">
+              <h3 class="history-title">上肢专项训练</h3>
+              <div class="history-date">2024-01-13 20:00-21:00</div>
+            </div>
+          </div>
+          <div class="history-stats">
+            <div class="history-stat">
+              <div class="history-stat-value">60</div>
+              <div class="history-stat-label">分钟</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">420</div>
+              <div class="history-stat-label">千卡</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">6</div>
+              <div class="history-stat-label">动作</div>
+            <div class="history-stat">
+              <div class="history-stat-value">18</div>
+              <div class="history-stat-label">组数</div>
+            <div>
+          </div>
+          <button class="view-details-btn" data-id="3">查看详情</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // DOM元素
+    const backBtn = document.getElementById('backBtn');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const totalDurationEl = document.getElementById('totalDuration');
+    const totalCaloriesEl = document.getElementById('totalCalories');
+    const totalSessionsEl = document.getElementById('totalSessions');
+    const chartActionBtns = document.querySelectorAll('.chart-action-btn');
+    const historyList = document.getElementById('historyList');
+    const loadingEl = document.getElementById('loading');
+    const toastEl = document.getElementById('toast');
+
+    // 图表实例
+    let durationChart = null;
+    let muscleGroupChart = null;
+
+    // 当前时间周期
+    let currentPeriod = 'week';
+    let currentChartType = 'duration';
+
+    // 模拟数据
+    const mockData = {
+      week: {
+        labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+        duration: [45, 60, 0, 90, 60, 120, 60],
+        calories: [320, 450, 0, 680, 450, 850, 450],
+        totalDuration: '5.5h',
+        totalCalories: '3,240',
+        totalSessions: '8'
+      },
+      month: {
+        labels: ['第1周', '第2周', '第3周', '第4周'],
+        duration: [240, 330, 280, 360],
+        calories: [1680, 2310, 1960, 2520],
+        totalDuration: '23h 30m',
+        totalCalories: '8,470',
+        totalSessions: '24'
+      },
+      year: {
+        labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+        duration: [360, 420, 480, 520, 560, 600, 580, 540, 490, 450, 420, 400],
+        calories: [2520, 2940, 3360, 3640, 3920, 4200, 4060, 3780, 3430, 3150, 2940, 2800],
+        totalDuration: '146h',
+        totalCalories: '37,760',
+        totalSessions: '180'
+      }
+    };
+
+    // 肌肉群数据
+    const muscleGroupData = {
+      labels: ['胸部', '背部', '肩部', '双臂', '腿部', '核心'],
+      data: [25, 20, 15, 15, 20, 5]
+    };
+
+    // 模拟训练历史数据
+    const mockHistory = [
+      {
+        id: '1',
+        title: '全身力量训练计划',
+        date: '2024-01-15 19:30-20:30',
+        duration: 60,
+        calories: 450,
+        exercises: 7,
+        sets: 21
+      },
+      {
+        id: '2',
+        title: '拉伸放松训练',
+        date: '2024-01-15 21:30-22:00',
+        duration: 30,
+        calories: 150,
+        exercises: 5,
+        sets: 5
+      },
+      {
+        id: '3',
+        title: '上肢专项训练',
+        date: '2024-01-13 20:00-21:00',
+        duration: 60,
+        calories: 420,
+        exercises: 6,
+        sets: 18
+      },
+      {
+        id: '4',
+        title: '下肢力量训练',
+        date: '2024-01-11 19:00-20:15',
+        duration: 75,
+        calories: 550,
+        exercises: 5,
+        sets: 15
+      },
+      {
+        id: '5',
+        title: 'HIIT燃脂训练',
+        date: '2024-01-09 18:30-19:00',
+        duration: 30,
+        calories: 380,
+        exercises: 8,
+        sets: 4
+      }
+    ];
+
+    // 显示加载
+    function showLoading() {
+      loadingEl.style.display = 'flex';
+    }
+
+    // 隐藏加载
+    function hideLoading() {
+      loadingEl.style.display = 'none';
+    }
+
+    // 显示提示
+    function showToast(message, duration = 2000) {
+      toastEl.textContent = message;
+      toastEl.style.display = 'block';
+      setTimeout(() => {
+        toastEl.style.display = 'none';
+      }, duration);
+    }
+
+    // 初始化时长趋势图表
+    function initDurationChart() {
+      const ctx = document.getElementById('durationChart').getContext('2d');
+      
+      // 销毁已存在的图表
+      if (durationChart) {
+        durationChart.destroy();
+      }
+      
+      const data = mockData[currentPeriod];
+      
+      durationChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: currentChartType === 'duration' ? '训练时长 (分钟)' : '消耗热量 (千卡)',
+            data: currentChartType === 'duration' ? data.duration : data.calories,
+            backgroundColor: currentChartType === 'duration' 
+              ? 'rgba(204, 255, 0, 0.7)' 
+              : 'rgba(255, 94, 91, 0.7)',
+            borderColor: currentChartType === 'duration' 
+              ? 'rgba(204, 255, 0, 1)' 
+              : 'rgba(255, 94, 91, 1)',
+            borderWidth: 1,
+            borderRadius: 8,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              cornerRadius: 8,
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              displayColors: false
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false,
+                drawBorder: false
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.6)'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.6)',
+                callback: function(value) {
+                  if (currentChartType === 'duration') {
+                    return value + 'm';
+                  } else {
+                    return value + 'kcal';
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化肌肉群分布图表
+    function initMuscleGroupChart() {
+      const ctx = document.getElementById('muscleGroupChart').getContext('2d');
+      
+      // 销毁已存在的图表
+      if (muscleGroupChart) {
+        muscleGroupChart.destroy();
+      }
+      
+      const gradientColors = [
+        'rgba(204, 255, 0, 0.8)',
+        'rgba(0, 209, 255, 0.8)',
+        'rgba(147, 51, 234, 0.8)',
+        'rgba(255, 94, 91, 0.8)',
+        'rgba(255, 189, 0, 0.8)',
+        'rgba(34, 197, 94, 0.8)'
+      ];
+      
+      muscleGroupChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: muscleGroupData.labels,
+          datasets: [{
+            data: muscleGroupData.data,
+            backgroundColor: gradientColors,
+            borderColor: 'rgba(0, 0, 0, 0.1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: 'rgba(255, 255, 255, 0.8)',
+                padding: 20,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              cornerRadius: 8,
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + context.parsed + '%';
+                }
+              }
+            }
+          },
+          cutout: '60%'
+        }
+      });
+    }
+
+    // 更新统计数据
+    function updateStatsData(period) {
+      showLoading();
+      
+      setTimeout(() => {
+        const data = mockData[period];
+        
+        // 更新总览数据
+        totalDurationEl.textContent = data.totalDuration;
+        totalCaloriesEl.textContent = data.totalCalories;
+        totalSessionsEl.textContent = data.totalSessions;
+        
+        // 更新图表
+        initDurationChart();
+        
+        // 更新训练历史
+        loadTrainingHistory(period);
+        
+        hideLoading();
+      }, 300);
+    }
+
+    // 加载训练历史
+    function loadTrainingHistory(period) {
+      // 这里可以根据不同时间周期加载不同的历史数据
+      // 为了简化，这里始终使用相同的历史数据
+      historyList.innerHTML = '';
+      
+      mockHistory.forEach(session => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        
+        historyItem.innerHTML = `
+          <div class="history-header">
+            <div class="history-info">
+              <h3 class="history-title">${session.title}</h3>
+              <div class="history-date">${session.date}</div>
+            </div>
+          </div>
+          <div class="history-stats">
+            <div class="history-stat">
+              <div class="history-stat-value">${session.duration}</div>
+              <div class="history-stat-label">分钟</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">${session.calories}</div>
+              <div class="history-stat-label">千卡</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">${session.exercises}</div>
+              <div class="history-stat-label">动作</div>
+            </div>
+            <div class="history-stat">
+              <div class="history-stat-value">${session.sets}</div>
+              <div class="history-stat-label">组数</div>
+            </div>
+          </div>
+          <button class="view-details-btn" data-id="${session.id}">查看详情</button>
+        `;
+        
+        // 添加查看详情事件
+        historyItem.querySelector('.view-details-btn').addEventListener('click', () => {
+          viewSessionDetails(session.id);
+        });
+        
+        historyList.appendChild(historyItem);
+      });
+    }
+
+    // 返回上一页
+    function goBack() {
+      try {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          // 如果没有历史记录，返回首页
+          window.location.href = 'home.html';
+        }
+      } catch (error) {
+        console.error('返回失败:', error);
+        window.location.href = 'home.html';
+      }
+    }
+
+    // 切换时间周期
+    function handlePeriodChange(period) {
+      if (period === currentPeriod) return;
+      
+      // 更新按钮状态
+      filterBtns.forEach(btn => {
+        if (btn.dataset.period === period) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      currentPeriod = period;
+      updateStatsData(period);
+    }
+
+    // 切换图表类型
+    function handleChartTypeChange(chartType) {
+      if (chartType === currentChartType) return;
+      
+      // 更新按钮状态
+      chartActionBtns.forEach(btn => {
+        if (btn.dataset.chart === chartType) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      currentChartType = chartType;
+      initDurationChart();
+    }
+
+    // 查看训练详情
+    function viewSessionDetails(sessionId) {
+      console.log(`查看训练详情，训练ID: ${sessionId}`);
+      showToast('查看训练详情');
+      // 实际应用中可以跳转到训练详情页
+      // 这里仅显示提示
+    }
+
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', () => {
+      // 返回按钮事件
+      backBtn.addEventListener('click', goBack);
+      
+      // 时间筛选器事件
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          handlePeriodChange(btn.dataset.period);
+        });
+      });
+      
+      // 图表类型切换事件
+      chartActionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          handleChartTypeChange(btn.dataset.chart);
+        });
+      });
+      
+      // 初始化图表
+      initDurationChart();
+      initMuscleGroupChart();
+      
+      // 加载训练历史
+      loadTrainingHistory(currentPeriod);
+    });
+    
+    // 监听页面加载完成
+    window.addEventListener('load', () => {
+      console.log('数据统计页面加载完成');
+    });
+  <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const backBtn = document.querySelector('.back-btn');
+            const exportBtn = document.querySelector('.export-btn');
+            const timeFilterBtns = document.querySelectorAll('.time-filter-btn');
+            
+            // 初始化页面
+            initializePage();
+            
+            // 返回按钮点击事件
+            backBtn.addEventListener('click', function() {
+                window.location.href = 'home.html';
+            });
+            
+            // 导出按钮点击事件
+            exportBtn.addEventListener('click', function() {
+                exportData();
+            });
+            
+            // 时间筛选按钮点击事件
+            timeFilterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 移除其他按钮的激活状态
+                    timeFilterBtns.forEach(b => b.classList.remove('active'));
+                    // 添加当前按钮的激活状态
+                    this.classList.add('active');
+                    // 更新数据
+                    updateTimeData(this.dataset.period);
+                });
+            });
+            
+            // 初始化页面
+            function initializePage() {
+                // 默认选中周筛选
+                document.querySelector('.time-filter-btn[data-period="week"]').classList.add('active');
+                
+                // 加载统计数据
+                loadStatisticsData('week');
+                
+                // 加载图表
+                loadCharts('week');
+            }
+            
+            // 加载统计数据
+            function loadStatisticsData(period) {
+                // 模拟数据加载
+                const statsData = getMockStatsData(period);
+                
+                // 更新概览卡片
+                document.querySelector('.total-duration .value').textContent = statsData.totalDuration;
+                document.querySelector('.total-duration .change').textContent = statsData.durationChange;
+                document.querySelector('.total-calories .value').textContent = statsData.totalCalories;
+                document.querySelector('.total-calories .change').textContent = statsData.caloriesChange;
+                document.querySelector('.total-sessions .value').textContent = statsData.totalSessions;
+                document.querySelector('.total-sessions .change').textContent = statsData.sessionsChange;
+            }
+            
+            // 加载图表
+            function loadCharts(period) {
+                // 模拟图表加载
+                const chartData = getMockChartData(period);
+                
+                // 清除现有图表
+                const durationChartContainer = document.getElementById('duration-chart');
+                const muscleChartContainer = document.getElementById('muscle-chart');
+                
+                // 简单的柱状图实现
+                renderDurationChart(durationChartContainer, chartData.durationData);
+                
+                // 简单的饼图实现
+                renderMuscleChart(muscleChartContainer, chartData.muscleData);
+            }
+            
+            // 更新时间数据
+            function updateTimeData(period) {
+                loadStatisticsData(period);
+                loadCharts(period);
+            }
+            
+            // 渲染时长趋势图
+            function renderDurationChart(container, data) {
+                // 清除容器
+                container.innerHTML = '';
+                
+                // 创建图表容器
+                const chart = document.createElement('div');
+                chart.className = 'chart-container';
+                chart.style.display = 'flex';
+                chart.style.alignItems = 'flex-end';
+                chart.style.height = '200px';
+                chart.style.gap = '8px';
+                chart.style.padding = '20px';
+                
+                // 找到最大值以进行比例缩放
+                const maxValue = Math.max(...data.map(item => item.value));
+                
+                // 创建柱子
+                data.forEach(item => {
+                    const barContainer = document.createElement('div');
+                    barContainer.style.display = 'flex';
+                    barContainer.style.flexDirection = 'column';
+                    barContainer.style.alignItems = 'center';
+                    barContainer.style.flex = '1';
+                    
+                    const bar = document.createElement('div');
+                    const height = maxValue > 0 ? (item.value / maxValue) * 180 : 0;
+                    bar.style.height = height + 'px';
+                    bar.style.width = '30px';
+                    bar.style.backgroundColor = '#4CAF50';
+                    bar.style.borderRadius = '4px 4px 0 0';
+                    bar.style.marginBottom = '5px';
+                    
+                    const label = document.createElement('div');
+                    label.textContent = item.label;
+                    label.style.fontSize = '12px';
+                    label.style.color = '#ccc';
+                    label.style.marginTop = '5px';
+                    
+                    const value = document.createElement('div');
+                    value.textContent = item.value + '分钟';
+                    value.style.fontSize = '10px';
+                    value.style.color = '#999';
+                    value.style.marginTop = '2px';
+                    
+                    barContainer.appendChild(label);
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(value);
+                    
+                    chart.appendChild(barContainer);
+                });
+                
+                container.appendChild(chart);
+            }
+            
+            // 渲染肌肉群分布图
+            function renderMuscleChart(container, data) {
+                // 清除容器
+                container.innerHTML = '';
+                
+                // 创建图表容器
+                const chart = document.createElement('div');
+                chart.className = 'chart-container';
+                chart.style.display = 'flex';
+                chart.style.alignItems = 'center';
+                chart.style.justifyContent = 'center';
+                chart.style.height = '250px';
+                
+                // 创建饼图
+                const pieContainer = document.createElement('div');
+                pieContainer.style.position = 'relative';
+                pieContainer.style.width = '200px';
+                pieContainer.style.height = '200px';
+                pieContainer.style.borderRadius = '50%';
+                pieContainer.style.overflow = 'hidden';
+                
+                // 计算总值
+                const total = data.reduce((sum, item) => sum + item.value, 0);
+                
+                // 创建饼图片段
+                let startAngle = 0;
+                data.forEach(item => {
+                    const percentage = (item.value / total) * 100;
+                    const angle = (item.value / total) * 360;
+                    
+                    const slice = document.createElement('div');
+                    slice.style.position = 'absolute';
+                    slice.style.width = '100%';
+                    slice.style.height = '100%';
+                    slice.style.clipPath = `conic-gradient(from ${startAngle}deg, #${getRandomColor()} 0 ${percentage}%, transparent ${percentage}% 100%)`;
+                    slice.style.backgroundColor = `#${getRandomColor()}`;
+                    
+                    startAngle += angle;
+                    
+                    pieContainer.appendChild(slice);
+                });
+                
+                // 添加中心文本
+                const centerText = document.createElement('div');
+                centerText.style.position = 'absolute';
+                centerText.style.top = '50%';
+                centerText.style.left = '50%';
+                centerText.style.transform = 'translate(-50%, -50%)';
+                centerText.style.textAlign = 'center';
+                centerText.style.color = '#fff';
+                centerText.innerHTML = `<div style="font-size: 18px; font-weight: bold;">肌肉群</div><div style="font-size: 14px; margin-top: 4px;">分布</div>`;
+                
+                pieContainer.appendChild(centerText);
+                chart.appendChild(pieContainer);
+                
+                container.appendChild(chart);
+            }
+            
+            // 获取随机颜色
+            function getRandomColor() {
+                const colors = ['4CAF50', '2196F3', 'FF9800', 'E91E63', '9C27B0', 'FFC107', '795548', '607D8B'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            // 导出数据
+            function exportData() {
+                // 显示导出成功消息
+                showSuccessMessage('数据导出功能将在完整版本中实现');
+            }
+            
+            // 获取模拟统计数据
+            function getMockStatsData(period) {
+                if (period === 'week') {
+                    return {
+                        totalDuration: '420分钟',
+                        durationChange: '+12%',
+                        totalCalories: '2100卡',
+                        caloriesChange: '+8%',
+                        totalSessions: '15次',
+                        sessionsChange: '+5%'
+                    };
+                } else if (period === 'month') {
+                    return {
+                        totalDuration: '1680分钟',
+                        durationChange: '+5%',
+                        totalCalories: '8400卡',
+                        caloriesChange: '+3%',
+                        totalSessions: '60次',
+                        sessionsChange: '+2%'
+                    };
+                } else { // year
+                    return {
+                        totalDuration: '20160分钟',
+                        durationChange: '+15%',
+                        totalCalories: '100800卡',
+                        caloriesChange: '+10%',
+                        totalSessions: '720次',
+                        sessionsChange: '+8%'
+                    };
+                }
+            }
+            
+            // 获取模拟图表数据
+            function getMockChartData(period) {
+                if (period === 'week') {
+                    return {
+                        durationData: [
+                            { label: '周一', value: 60 },
+                            { label: '周二', value: 90 },
+                            { label: '周三', value: 45 },
+                            { label: '周四', value: 75 },
+                            { label: '周五', value: 90 },
+                            { label: '周六', value: 45 },
+                            { label: '周日', value: 15 }
+                        ],
+                        muscleData: [
+                            { label: '胸部', value: 25 },
+                            { label: '背部', value: 20 },
+                            { label: '腿部', value: 30 },
+                            { label: '手臂', value: 15 },
+                            { label: '核心', value: 10 }
+                        ]
+                    };
+                } else if (period === 'month') {
+                    return {
+                        durationData: [
+                            { label: '第1周', value: 300 },
+                            { label: '第2周', value: 280 },
+                            { label: '第3周', value: 320 },
+                            { label: '第4周', value: 340 }
+                        ],
+                        muscleData: [
+                            { label: '胸部', value: 120 },
+                            { label: '背部', value: 100 },
+                            { label: '腿部', value: 150 },
+                            { label: '手臂', value: 80 },
+                            { label: '核心', value: 70 }
+                        ]
+                    };
+                } else { // year
+                    return {
+                        durationData: [
+                            { label: '1月', value: 1200 },
+                            { label: '2月', value: 1100 },
+                            { label: '3月', value: 1300 },
+                            { label: '4月', value: 1400 },
+                            { label: '5月', value: 1500 },
+                            { label: '6月', value: 1600 },
+                            { label: '7月', value: 1700 },
+                            { label: '8月', value: 1800 },
+                            { label: '9月', value: 1750 },
+                            { label: '10月', value: 1650 },
+                            { label: '11月', value: 1550 },
+                            { label: '12月', value: 1450 }
+                        ],
+                        muscleData: [
+                            { label: '胸部', value: 1200 },
+                            { label: '背部', value: 1000 },
+                            { label: '腿部', value: 1500 },
+                            { label: '手臂', value: 800 },
+                            { label: '核心', value: 700 }
+                        ]
+                    };
+                }
+            }
+            
+            // 显示成功消息
+            function showSuccessMessage(message) {
+                const container = document.querySelector('.statistics-container');
+                const successElement = document.createElement('div');
+                successElement.className = 'message success';
+                successElement.textContent = message;
+                successElement.style.position = 'fixed';
+                successElement.style.top = '20px';
+                successElement.style.left = '50%';
+                successElement.style.transform = 'translateX(-50%)';
+                successElement.style.background = 'rgba(39, 174, 96, 0.9)';
+                successElement.style.color = 'white';
+                successElement.style.padding = '12px 24px';
+                successElement.style.borderRadius = '8px';
+                successElement.style.zIndex = '1000';
+                successElement.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                
+                document.body.appendChild(successElement);
+                
+                // 3秒后移除消息
+                setTimeout(() => {
+                    successElement.remove();
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>训练统计 - 健身助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* 顶部导航栏 */
+    .stats-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      margin-bottom: 24px;
+      position: sticky;
+      top: 0;
+      background: rgba(10, 10, 26, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .header-right {
+      width: 40px;
+    }
+
+    /* 主容器 */
+    .statistics-container {
+      padding: 0 20px 40px;
+    }
+
+    /* 筛选器 */
+    .filter-section {
+      margin-bottom: 24px;
+    }
+
+    .time-filter {
+      display: flex;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .filter-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      color: #121212;
+    }
+
+    /* 总览数据卡片 */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .summary-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .card-icon.bg-blue {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .card-icon.bg-green {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .card-icon.bg-purple {
+      background: rgba(147, 51, 234, 0.2);
+      border: 1px solid rgba(147, 51, 234, 0.3);
+    }
+
+    .card-content {
+      flex: 1;
+    }
+
+    .card-value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .card-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* 图表部分 */
+    .charts-section {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 200px;
+    }
+
+    /* 模拟柱状图 */
+    .mock-chart {
+      position: relative;
+      height: 160px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      padding-bottom: 20px;
+    }
+
+    .chart-bar {
+      background: linear-gradient(180deg, #CCFF00, #00D1FF);
+      border-radius: 4px 4px 0 0;
+      position: absolute;
+      bottom: 20px;
+      transition: height 0.5s ease;
+    }
+
+    .chart-labels {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .chart-labels span {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      width: 14%;
+    }
+
+    /* 模拟饼图 */
+    .mock-pie-chart {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+    }
+
+    .pie-segment {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%);
+    }
+
+    .segment-1 {
+      background: #CCFF00;
+      transform: rotate(0deg);
+    }
+
+    .segment-2 {
+      background: #00D1FF;
+      transform: rotate(126deg);
+    }
+
+    .segment-3 {
+      background: #9333EA;
+      transform: rotate(234deg);
+    }
+
+    .segment-4 {
+      background: #22C55E;
+      transform: rotate(306deg);
+    }
+
+    .pie-center {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: #0a0a1a;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .pie-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .legend-color.color-1 {
+      background: #CCFF00;
+    }
+
+    .legend-color.color-2 {
+      background: #00D1FF;
+    }
+
+    .legend-color.color-3 {
+      background: #9333EA;
+    }
+
+    .legend-color.color-4 {
+      background: #22C55E;
+    }
+
+    .legend-text {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* 训练历史记录 */
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .session-info {
+      flex: 1;
+    }
+
+    .session-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 4px 0;
+    }
+
+    .session-date {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .session-duration {
+      font-size: 14px;
+      color: #00D1FF;
+      font-weight: 500;
+    }
+
+    .session-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .view-details-btn {
+      width: 100%;
+      padding: 8px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: transparent;
+      color: #00D1FF;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .view-details-btn:hover {
+      background: rgba(0, 209, 255, 0.1);
+      border-color: #00D1FF;
+    }
+
+    /* 加载动画 */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 26, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: #00D1FF;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 提示弹窗 */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      display: none;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .statistics-container {
+        padding: 0 16px 40px;
+      }
+      
+      .summary-cards {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .charts-section {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .session-stats {
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .statistics-container {
+        padding: 0 12px 40px;
+      }
+      
+      .stats-header {
+        padding: 16px 12px;
+      }
+      
+      .page-title {
+        font-size: 18px;
+      }
+      
+      .time-filter {
+        flex-direction: column;
+      }
+      
+      .chart-container {
+        height: 180px;
+      }
+      
+      .mock-chart {
+        height: 140px;
+      }
+      
+      .session-stats {
+        flex-direction: column;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 加载动画 -->
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- 提示弹窗 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 顶部导航栏 -->
+  <header class="stats-header">
+    <button class="back-btn" id="backBtn">←</button>
+    <h1 class="page-title">训练统计</h1>
+    <div class="header-right"></div>
+  </header>
+
+  <div class="statistics-container">
+    <!-- 筛选器 -->
+    <section class="filter-section">
+      <div class="time-filter">
+        <button class="filter-btn active" data-value="week">周</button>
+        <button class="filter-btn" data-value="month">月</button>
+        <button class="filter-btn" data-value="year">年</button>
+      </div>
+    </section>
+
+    <!-- 总览数据卡片 -->
+    <section class="summary-cards">
+      <div class="summary-card">
+        <div class="card-icon bg-blue">⏱️</div>
+        <div class="card-content">
+          <div class="card-value" id="totalMinutes">120</div>
+          <div class="card-label">训练时长（分钟）</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon bg-green">🔥</div>
+        <div class="card-content">
+          <div class="card-value" id="totalCalories">1200</div>
+          <div class="card-label">消耗热量（千卡）</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon bg-purple">💪</div>
+        <div class="card-content">
+          <div class="card-value" id="totalSessions">5</div>
+          <div class="card-label">训练次数</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 训练趋势图表 -->
+    <section class="charts-section">
+      <div class="chart-card">
+        <h3 class="chart-title">训练时长趋势</h3>
+        <div class="chart-container">
+          <div class="mock-chart">
+            <div class="chart-bar" style="height: 30%; width: 14%; left: 0%;"></div>
+            <div class="chart-bar" style="height: 50%; width: 14%; left: 16%;"></div>
+            <div class="chart-bar" style="height: 70%; width: 14%; left: 32%;"></div>
+            <div class="chart-bar" style="height: 45%; width: 14%; left: 48%;"></div>
+            <div class="chart-bar" style="height: 60%; width: 14%; left: 64%;"></div>
+            <div class="chart-bar" style="height: 80%; width: 14%; left: 80%;"></div>
+          </div>
+          <div class="chart-labels" id="chartLabels">
+            <span>周一</span>
+            <span>周二</span>
+            <span>周三</span>
+            <span>周四</span>
+            <span>周五</span>
+            <span>周六</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3 class="chart-title">肌肉群训练分布</h3>
+        <div class="chart-container">
+          <div class="mock-pie-chart">
+            <div class="pie-segment segment-1"></div>
+            <div class="pie-segment segment-2"></div>
+            <div class="pie-segment segment-3"></div>
+            <div class="pie-segment segment-4"></div>
+            <div class="pie-center"></div>
+          </div>
+          <div class="pie-legend">
+            <div class="legend-item">
+              <div class="legend-color color-1"></div>
+              <div class="legend-text">上肢 (35%)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color color-2"></div>
+              <div class="legend-text">下肢 (30%)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color color-3"></div>
+              <div class="legend-text">核心 (20%)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color color-4"></div>
+              <div class="legend-text">全身性 (15%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 训练历史记录 -->
+    <section class="history-section">
+      <h3 class="section-title">最近训练历史</h3>
+      <div class="history-list">
+        <div class="history-item">
+          <div class="history-header">
+            <div class="session-info">
+              <h4 class="session-title">全身力量训练</h4>
+              <div class="session-date">2024-01-15 19:30</div>
+            </div>
+            <div class="session-duration">45 分钟</div>
+          </div>
+          <div class="session-stats">
+            <span class="stat-item">🔥 350 kcal</span>
+            <span class="stat-item">💪 7 个动作</span>
+            <span class="stat-item">✅ 100%</span>
+          </div>
+          <button class="view-details-btn" data-id="1">查看详情</button>
+        </div>
+        <div class="history-item">
+          <div class="history-header">
+            <div class="session-info">
+              <h4 class="session-title">上肢专项训练</h4>
+              <div class="session-date">2024-01-13 20:00</div>
+            </div>
+            <div class="session-duration">30 分钟</div>
+          </div>
+          <div class="session-stats">
+            <span class="stat-item">🔥 250 kcal</span>
+            <span class="stat-item">💪 5 个动作</span>
+            <span class="stat-item">✅ 90%</span>
+          </div>
+          <button class="view-details-btn" data-id="2">查看详情</button>
+        </div>
+        <div class="history-item">
+          <div class="history-header">
+            <div class="session-info">
+              <h4 class="session-title">HIIT燃脂训练</h4>
+              <div class="session-date">2024-01-10 18:00</div>
+            </div>
+            <div class="session-duration">25 分钟</div>
+          </div>
+          <div class="session-stats">
+            <span class="stat-item">🔥 300 kcal</span>
+            <span class="stat-item">💪 8 个动作</span>
+            <span class="stat-item">✅ 100%</span>
+          </div>
+          <button class="view-details-btn" data-id="3">查看详情</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // DOM元素
+    const backBtn = document.getElementById('backBtn');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const totalMinutesEl = document.getElementById('totalMinutes');
+    const totalCaloriesEl = document.getElementById('totalCalories');
+    const totalSessionsEl = document.getElementById('totalSessions');
+    const chartLabelsEl = document.getElementById('chartLabels');
+    const viewDetailsBtns = document.querySelectorAll('.view-details-btn');
+    const loadingEl = document.getElementById('loading');
+    const toastEl = document.getElementById('toast');
+
+    // 当前选中的时间过滤器
+    let selectedTimeFilter = 'week';
+
+    // 模拟数据
+    const timeData = {
+      week: {
+        totalMinutes: '120',
+        totalCalories: '1200',
+        totalSessions: '5',
+        labels: ['周一', '周二', '周三', '周四', '周五', '周六']
+      },
+      month: {
+        totalMinutes: '480',
+        totalCalories: '4500',
+        totalSessions: '18',
+        labels: ['第1周', '第2周', '第3周', '第4周']
+      },
+      year: {
+        totalMinutes: '5280',
+        totalCalories: '50000',
+        totalSessions: '200',
+        labels: ['1月', '3月', '6月', '9月', '12月']
+      }
+    };
+
+    // 显示加载
+    function showLoading() {
+      loadingEl.style.display = 'flex';
+    }
+
+    // 隐藏加载
+    function hideLoading() {
+      loadingEl.style.display = 'none';
+    }
+
+    // 显示提示
+    function showToast(message, duration = 2000) {
+      toastEl.textContent = message;
+      toastEl.style.display = 'block';
+      setTimeout(() => {
+        toastEl.style.display = 'none';
+      }, duration);
+    }
+
+    // 更新统计数据
+    function updateStatsData(filter) {
+      showLoading();
+      
+      // 模拟网络请求延迟
+      setTimeout(() => {
+        const data = timeData[filter];
+        totalMinutesEl.textContent = data.totalMinutes;
+        totalCaloriesEl.textContent = data.totalCalories;
+        totalSessionsEl.textContent = data.totalSessions;
+        
+        // 更新图表标签
+        chartLabelsEl.innerHTML = '';
+        data.labels.forEach(label => {
+          const span = document.createElement('span');
+          span.textContent = label;
+          chartLabelsEl.appendChild(span);
+        });
+        
+        // 更新柱状图高度（随机模拟）
+        const bars = document.querySelectorAll('.chart-bar');
+        bars.forEach(bar => {
+          const randomHeight = Math.floor(Math.random() * 70) + 20; // 20-90%
+          bar.style.height = `${randomHeight}%`;
+        });
+        
+        hideLoading();
+      }, 500);
+    }
+
+    // 返回上一页
+    function goBack() {
+      try {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          // 如果没有历史记录，返回首页
+          window.location.href = 'home.html';
+        }
+      } catch (error) {
+        console.error('返回失败:', error);
+        window.location.href = 'home.html';
+      }
+    }
+
+    // 查看训练详情
+    function viewSessionDetails(sessionId) {
+      console.log(`查看训练详情: ${sessionId}`);
+      showToast('查看训练详情');
+      // 实际应用中可以跳转到详情页
+      // window.location.href = `/frontend/training-detail.html?id=${sessionId}`;
+    }
+
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', () => {
+      // 返回按钮事件
+      backBtn.addEventListener('click', goBack);
+      
+      // 筛选器按钮事件
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const filter = btn.getAttribute('data-value');
+          // 更新选中状态
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          selectedTimeFilter = filter;
+          // 更新数据
+          updateStatsData(filter);
+        });
+      });
+      
+      // 查看详情按钮事件
+      viewDetailsBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sessionId = btn.getAttribute('data-id');
+          viewSessionDetails(sessionId);
+        });
+      });
+      
+      // 初始化数据
+      updateStatsData(selectedTimeFilter);
+    });
+    
+    // 监听页面加载完成
+    window.addEventListener('load', () => {
+      console.log('训练统计页面加载完成');
+    });
+
+    // 导航栏高亮当前页面
+    const currentPage = window.location.pathname.split('/').pop() || 'statistics.html';
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      item.classList.remove('active');
+      const href = item.getAttribute('href');
+      if (href && currentPage === href) {
+        item.classList.add('active');
+      }
+    });
+  </script>
+
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a href="home.html" class="nav-item">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">首页</div>
+    </a>
+    <a href="calendar.html" class="nav-item">
+      <div class="nav-icon">📅</div>
+      <div class="nav-label">日历</div>
+    </a>
+    <a href="#" class="nav-item coming-soon" onclick="event.preventDefault(); alert('社区功能即将上线，敬请期待！');">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">社区</div>
+    </a>
+    <a href="profile.html" class="nav-item">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">我的</div>
+    </a>
+  </nav>
+
+  <style>
+    /* 底部导航栏样式 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 10, 26, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      min-width: 0;
+    }
+
+    .nav-item:hover {
+      color: #00D1FF;
+    }
+
+    .nav-item.active {
+      color: #CCFF00;
+    }
+
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item.active .nav-icon {
+      transform: scale(1.1);
+    }
+
+    .nav-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .nav-item.coming-soon {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .nav-item.coming-soon:hover {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    body {
+      padding-bottom: 80px;
+    }
+
+    @media (max-width: 480px) {
+      .nav-label {
+        display: none;
+      }
+
+      .nav-icon {
+        font-size: 22px;
+        margin-bottom: 0;
+      }
+    }
+    </style>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+    <script>
+      // 重写统计数据加载函数，对接API
+      (function() {
+        const originalUpdateStatsData = window.updateStatsData;
+        
+        window.updateStatsData = async function(filter) {
+          showLoading();
+          
+          try {
+            const periodMap = {
+              'today': 'today',
+              'week': 'week',
+              'month': 'month',
+              'year': 'year',
+              'all': 'all'
+            };
+            
+            const period = periodMap[filter] || 'all';
+            const response = await API.getStatistics(period, 'all');
+            
+            if (response.code === 200) {
+              const data = response.data;
+              
+              // 更新统计数据
+              if (data.summary) {
+                const totalMinutesEl = document.getElementById('totalMinutes');
+                const totalCaloriesEl = document.getElementById('totalCalories');
+                const totalSessionsEl = document.getElementById('totalSessions');
+                
+                if (totalMinutesEl) totalMinutesEl.textContent = data.summary.totalMinutes || 0;
+                if (totalCaloriesEl) totalCaloriesEl.textContent = data.summary.totalCalories || 0;
+                if (totalSessionsEl) totalSessionsEl.textContent = data.summary.totalSessions || 0;
+              }
+              
+              // 更新图表数据
+              if (data.charts) {
+                updateCharts(data.charts);
+              }
+            } else {
+              console.error('获取统计数据失败:', response.message);
+              // 使用原始函数作为备用
+              if (originalUpdateStatsData) originalUpdateStatsData(filter);
+            }
+          } catch (error) {
+            console.error('获取统计数据失败:', error);
+            // 使用原始函数作为备用
+            if (originalUpdateStatsData) originalUpdateStatsData(filter);
+          } finally {
+            hideLoading();
+          }
+        };
+        
+        function updateCharts(charts) {
+          // 更新图表显示
+          if (charts.caloriesChart) {
+            // 更新卡路里图表
+            const chartLabelsEl = document.getElementById('chartLabels');
+            if (chartLabelsEl) {
+              chartLabelsEl.innerHTML = '';
+              charts.caloriesChart.labels.forEach(label => {
+                const span = document.createElement('span');
+                span.textContent = label;
+                chartLabelsEl.appendChild(span);
+              });
+            }
+            
+            // 更新柱状图
+            const bars = document.querySelectorAll('.chart-bar');
+            bars.forEach((bar, index) => {
+              if (charts.caloriesChart.data[index] !== undefined) {
+                const height = Math.min(100, Math.max(10, (charts.caloriesChart.data[index] / 500) * 100));
+                bar.style.height = `${height}%`;
+              }
+            });
+          }
+        }
+      })();
+  </script>
+</body>
+</html>
