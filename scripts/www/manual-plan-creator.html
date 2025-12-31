@@ -135,9 +135,14 @@
     /* 表单样式 */
     .form-group {
       margin-bottom: 20px;
-  position: relative;
-  z-index: 1;
-}
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-group .exercise-name-selector {
+      position: relative;
+      z-index: 10;
+    }
 
 .form-group input,
 .form-group textarea,
@@ -462,7 +467,8 @@ select {
       display: flex;
       gap: 4px;
       align-items: center;
-      z-index: 12;
+      z-index: 20;
+      pointer-events: auto;
     }
 
     .plan-name-btn {
@@ -479,7 +485,7 @@ select {
       gap: 4px;
       pointer-events: auto !important;
       position: relative;
-      z-index: 13;
+      z-index: 1000;
     }
 
     .plan-name-btn:hover {
@@ -511,6 +517,8 @@ select {
       z-index: 2000;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(10px);
+      opacity: 1 !important;
+      visibility: visible !important;
     }
 
     .plan-name-search {
@@ -558,12 +566,12 @@ select {
       color: #FF4D4F;
       font-size: 12px;
       cursor: pointer;
-      opacity: 0;
+        opacity: 0;
       transition: all 0.2s ease;
-    }
+      }
 
     .plan-name-item:hover .plan-name-item-delete {
-      opacity: 1;
+        opacity: 1;
     }
 
     .plan-name-item-delete:hover {
@@ -580,13 +588,13 @@ select {
 /* 动作名称选择器 */
     .exercise-name-selector {
       position: relative;
-  z-index: 1;
-}
+      z-index: 10;
+    }
 
 .exercise-name-selector .form-input {
   z-index: 100;
   pointer-events: auto !important;
-    }
+}
 
     .exercise-name-input-wrapper {
       position: relative;
@@ -599,18 +607,26 @@ select {
     .exercise-name-input-wrapper .form-input {
       flex: 1;
       padding-right: 80px;
-  position: relative;
-  z-index: 100;
-  pointer-events: auto !important;
+      position: relative;
+      z-index: 100;
+      pointer-events: auto !important;
+    }
+
+    /* 按钮区域使用更高的z-index确保能被点击 */
+    .exercise-name-input-wrapper {
+      position: relative;
     }
 
     .exercise-name-actions {
       position: absolute;
       right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
       display: flex;
       gap: 4px;
       align-items: center;
-  z-index: 101;
+      z-index: 30;
+      pointer-events: none; /* 让容器不拦截事件 */
     }
 
     .exercise-name-btn {
@@ -627,7 +643,12 @@ select {
       gap: 4px;
       pointer-events: auto !important;
       position: relative;
-      z-index: 102;
+      z-index: 1500;
+      width: 32px;
+      height: 32px;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
     }
 
     .exercise-name-btn:hover {
@@ -659,6 +680,8 @@ select {
       z-index: 2000;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(10px);
+      opacity: 1 !important;
+      visibility: visible !important;
     }
 
     .exercise-name-search {
@@ -819,7 +842,7 @@ select {
   color: #fff;
   font-size: 14px;
   margin-left: 16px;
-}
+    }
 
     /* 提示弹窗 */
     .toast {
@@ -1015,7 +1038,7 @@ select {
 
 .nav-item.coming-soon:hover {
   color: rgba(255, 255, 255, 0.6);
-}
+    }
 
     /* 响应式设计 */
     @media (max-width: 768px) {
@@ -1102,9 +1125,9 @@ body {
     <!-- 计划信息表单 -->
             <div class="form-section">
       <h2 class="section-title">计划信息</h2>
-                <div class="form-group">
+      <div class="form-group">
                     <label class="form-label">计划名称 <span class="required">*</span></label>
-                    <div class="plan-name-selector">
+        <div class="plan-name-selector">
                         <div class="plan-name-input-wrapper">
                             <input
                                 id="planName"
@@ -1118,14 +1141,14 @@ body {
                                 onfocus="handlePlanNameFocus(event)"
                             />
                             <div class="plan-name-actions">
-                                <button type="button" class="plan-name-btn">
-                                    <span>📋</span>
-                                </button>
-                                <button type="button" class="plan-name-btn save-btn" title="保存为常用计划">
-                                    <span>💾</span>
-                                </button>
-                            </div>
-                        </div>
+                                <button type="button" class="plan-name-btn" onclick="togglePlanNameDropdown()">
+                <span>📋</span>
+              </button>
+                                <button type="button" class="plan-name-btn save-btn" onclick="savePlanName()" title="保存为常用计划">
+                <span>💾</span>
+              </button>
+      </div>
+          </div>
                         <div class="plan-name-dropdown" id="planNameDropdown" style="display: none;">
                             <div class="plan-name-search">
                                 <input
@@ -1134,18 +1157,18 @@ body {
                                     class="plan-name-search-input"
                                     oninput="updatePlanNameSearch(this.value)"
                                 />
-                            </div>
+            </div>
                             <div class="plan-name-list">
                                 <div class="plan-name-category">常用计划</div>
                                 <div class="plan-name-common-list" id="commonPlanNamesList">
                                     <!-- 动态生成 -->
-                                </div>
+            </div>
                                 <div class="plan-name-category" style="margin-top: 8px;">我的计划</div>
                                 <div class="plan-name-custom-list" id="customPlanNamesList">
                                     <!-- 动态生成 -->
-                                </div>
-                            </div>
-                        </div>
+          </div>
+        </div>
+      </div>
                     </div>
                     <div class="error-message" id="planNameError"></div>
                 </div>
@@ -1241,9 +1264,9 @@ body {
                 <div class="nav-label">我的</div>
             </a>
         </nav>
-    </div>
+  </div>
 
-    <script>
+  <script>
         // API连接测试
         async function testAPIConnection() {
             try {
@@ -1361,36 +1384,60 @@ document.addEventListener('DOMContentLoaded', async function() {
     renderPlanNameDropdown(); // 初始化计划名称下拉菜单
     document.addEventListener('click', handleGlobalClick);
 
-    // 测试按钮功能并添加事件监听器
-    console.log('页面加载完成，测试按钮功能...');
-    setTimeout(() => {
+    // 立即绑定计划名称和动作名称按钮事件
+    bindAllButtons();
+
+    function bindAllButtons() {
+        // 绑定计划名称按钮
+        bindPlanNameButtons();
+
+        // 绑定动作名称按钮
+        bindExerciseNameButtons();
+    }
+
+    function bindPlanNameButtons() {
+        console.log('绑定计划名称按钮事件...');
         const planBtns = document.querySelectorAll('.plan-name-btn');
         console.log('找到的计划名称按钮数量:', planBtns.length);
 
         planBtns.forEach((btn, index) => {
-            console.log(`按钮${index}:`, btn);
-            console.log(`按钮${index} onclick属性:`, btn.getAttribute('onclick'));
+            console.log(`按钮${index}:`, btn, '可见性:', getComputedStyle(btn).pointerEvents);
 
             // 移除现有的onclick属性，添加事件监听器
             btn.removeAttribute('onclick');
+            btn.style.pointerEvents = 'auto';
+            btn.style.cursor = 'pointer';
 
             if (index === 0) {
                 // 第一个按钮是选择按钮
                 btn.addEventListener('click', function(e) {
-                    console.log('选择按钮通过事件监听器被点击');
+                    console.log('计划名称选择按钮被点击');
+                    e.preventDefault();
                     e.stopPropagation();
+                    console.log('调用togglePlanNameDropdown');
                     togglePlanNameDropdown();
                 });
+                console.log('选择按钮事件已绑定');
             } else if (index === 1) {
                 // 第二个按钮是保存按钮
                 btn.addEventListener('click', function(e) {
-                    console.log('保存按钮通过事件监听器被点击');
+                    console.log('计划名称保存按钮被点击');
+                    e.preventDefault();
                     e.stopPropagation();
+                    console.log('调用savePlanName');
                     savePlanName();
                 });
+                console.log('保存按钮事件已绑定');
             }
         });
-    }, 1000);
+
+        console.log('计划名称按钮事件绑定完成');
+    }
+
+    function bindExerciseNameButtons() {
+        // 现在按钮直接在HTML中使用onclick属性，所以不需要额外绑定
+        console.log('动作名称按钮使用HTML onclick属性绑定');
+    }
 });
 
 // 处理计划名称输入
@@ -1410,7 +1457,7 @@ function updatePlanDifficulty(value) {
 }
 
 // 检查登录状态
-function checkLoginStatus() {
+async function checkLoginStatus() {
     try {
         const token = localStorage.getItem('token');
         const userInfo = localStorage.getItem('user_info');
@@ -1420,11 +1467,26 @@ function checkLoginStatus() {
           setTimeout(() => {
                 window.location.href = 'index.html';
             }, 1000);
-      } else {
+            return false;
+        } else {
             console.log('用户已登录，可以使用创建计划功能');
+
+            // 检查是否需要数据同步
+            if (DataSyncManager.shouldSync()) {
+                console.log('执行数据同步...');
+                try {
+                    await DataSyncManager.syncBothWays();
+                } catch (error) {
+                    console.error('数据同步失败:', error);
+                    // 同步失败不影响页面正常使用
+                }
+            }
+
+            return true;
         }
     } catch (error) {
         console.error('检查登录状态失败:', error);
+        return false;
     }
 }
 
@@ -1641,10 +1703,10 @@ function validatePlanName() {
 
     // 保存计划
     async function savePlan() {
-        if (!validateForm()) {
-            return;
-        }
-
+      if (!validateForm()) {
+        return;
+      }
+      
         // 在保存前测试API连接（可选检查，不阻止保存）
         const apiConnected = await testAPIConnection();
         if (!apiConnected) {
@@ -1681,8 +1743,11 @@ function validatePlanName() {
 
         if (response.code === 200) {
             console.log('计划创建成功，planId:', response.data?.planId);
+            showToast('训练计划创建成功！', 'success');
+
             // 获取要添加的日期（从URL参数或使用今天）
             let dateStr;
+            let calendarSuccess = false;
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const dateParam = urlParams.get('date');
@@ -1702,26 +1767,46 @@ function validatePlanName() {
                     console.log('添加到日历响应:', calendarResponse);
                     if (calendarResponse.code === 200) {
                         console.log('计划已成功添加到日历:', dateStr);
-                    } else {
+                        calendarSuccess = true;
+        } else {
                         console.warn('添加到日历失败，响应码:', calendarResponse.code, calendarResponse.message);
+                        showToast('计划创建成功，但添加到日历失败', 'warning');
                     }
                 } catch (calendarError) {
                     console.error('添加到日历失败:', calendarError);
+                    showToast('计划创建成功，但添加到日历时出现问题', 'warning');
                     // 即使添加到日历失败，也显示成功，因为计划已经创建
                 }
             } catch (dateError) {
                 console.error('处理日期参数失败:', dateError);
+                showToast('计划创建成功，但日期处理出现问题', 'warning');
             }
 
             isSaving = false;
             showLoading(false);
-            // 显示成功弹窗
+
+            // 触发数据同步
+            try {
+                console.log('计划保存成功，开始同步数据...');
+                await DataSyncManager.syncToCloud();
+            } catch (syncError) {
+                console.error('数据同步失败:', syncError);
+                // 同步失败不影响保存成功的提示
+            }
+
+            // 显示成功弹窗，根据日历添加结果调整消息
+            const successMessage = calendarSuccess ?
+                '训练计划已保存并添加到日历中' :
+                '训练计划已保存到服务器';
+            document.querySelector('#successModal .modal-message').textContent = successMessage;
             showSuccessModal = true;
             document.getElementById('successModal').style.display = 'flex';
         } else {
             isSaving = false;
             showLoading(false);
-            showToast(response.message || '保存失败，请稍后重试', 'error');
+            const errorMessage = response.message || '保存失败，请稍后重试';
+            console.error('计划创建失败，响应:', response);
+            showToast(errorMessage, 'error');
         }
       } catch (error) {
         isSaving = false;
@@ -1733,22 +1818,33 @@ function validatePlanName() {
             // 尝试本地保存
             try {
                 savePlanLocally(apiData);
-                showToast('网络连接失败，已保存到本地设备', 'error');
+                showToast('网络连接失败，已保存到本地设备。您可以在网络恢复后同步数据。', 'warning');
             } catch (localError) {
                 console.error('本地保存也失败:', localError);
-                showToast('保存失败，请检查网络连接', 'error');
+                showToast('保存失败，请检查网络连接后重试', 'error');
             }
         } else if (error.httpStatus === 0) {
             // 尝试本地保存
             try {
                 savePlanLocally(apiData);
-                showToast('服务器暂时不可用，已保存到本地设备', 'error');
+                showToast('服务器暂时不可用，已保存到本地设备。您可以在服务器恢复后同步数据。', 'warning');
             } catch (localError) {
                 console.error('本地保存也失败:', localError);
                 showToast('保存失败，请稍后重试', 'error');
             }
         } else {
-            showToast(error.message || '保存失败，请稍后重试', 'error');
+            const errorMessage = error.message || '保存失败，请稍后重试';
+            showToast(errorMessage, 'error');
+
+            // 如果是验证错误或其他客户端错误，尝试本地保存
+            if (error.code && (error.code === 400 || error.code === 422)) {
+                try {
+                    savePlanLocally(apiData);
+                    showToast('服务器验证失败，已保存到本地设备。请检查数据格式。', 'warning');
+                } catch (localError) {
+                    console.error('本地保存也失败:', localError);
+                }
+            }
         }
     }
 }
@@ -1878,10 +1974,10 @@ function createExerciseElement(exercise, index) {
                             onchange="updateExerciseName(${index}, this.value)"
                         />
                         <div class="exercise-name-actions">
-                            <button type="button" class="exercise-name-btn" onclick="toggleExerciseNameDropdown(${index})">
+                            <button type="button" class="exercise-name-btn" onclick="handleExerciseButtonClick(${index}, 'select', event)" style="pointer-events: auto !important; cursor: pointer;" title="选择常用动作">
                                 <span>📋</span>
                             </button>
-                            <button type="button" class="exercise-name-btn save-btn" onclick="saveExerciseName(${index})" title="保存为常用动作">
+                            <button type="button" class="exercise-name-btn save-btn" onclick="handleExerciseButtonClick(${index}, 'save', event)" title="保存为常用动作" style="pointer-events: auto !important; cursor: pointer;">
                                 <span>💾</span>
                             </button>
                         </div>
@@ -2081,8 +2177,8 @@ function savePlanName() {
         showToast('该计划名称已在常用列表中', 'error');
         return;
     }
-
-    const customPlanNames = getCustomPlanNames();
+      
+      const customPlanNames = getCustomPlanNames();
     if (customPlanNames.includes(planNameValue)) {
         showToast('该计划名称已保存', 'error');
         return;
@@ -2155,59 +2251,188 @@ function renderPlanNameDropdown() {
     }
 }
 
+// 数据同步管理器
+const DataSyncManager = {
+    // 同步本地数据到云端
+    async syncToCloud() {
+        try {
+            console.log('开始同步数据到云端...');
+
+            const syncData = {
+                customPlanNames: getCustomPlanNames(),
+                customExercises: getCustomExercises(),
+                localPlans: getLocalPlans(),
+                lastSyncTime: new Date().toISOString()
+            };
+
+            const response = await API.syncUserData(syncData, 'all');
+            if (response.code === 200) {
+                console.log('数据同步到云端成功');
+                // 更新本地同步时间戳
+                localStorage.setItem('lastSyncTime', syncData.lastSyncTime);
+                return true;
+            } else {
+                console.error('数据同步失败:', response.message);
+                return false;
+            }
+        } catch (error) {
+            console.error('同步数据到云端异常:', error);
+            return false;
+        }
+    },
+
+    // 从云端同步数据到本地
+    async syncFromCloud() {
+        try {
+            console.log('开始从云端同步数据...');
+
+            const lastSyncTime = localStorage.getItem('lastSyncTime');
+            const response = await API.getUserData('all', lastSyncTime);
+
+            if (response.code === 200 && response.data) {
+                const cloudData = response.data;
+
+                // 合并云端数据到本地
+                if (cloudData.customPlanNames) {
+                    const localNames = getCustomPlanNames();
+                    const mergedNames = [...new Set([...localNames, ...cloudData.customPlanNames])];
+                    localStorage.setItem('customPlanNames', JSON.stringify(mergedNames));
+                }
+
+                if (cloudData.customExercises) {
+                    const localExercises = getCustomExercises();
+                    const mergedExercises = [...new Set([...localExercises, ...cloudData.customExercises])];
+                    localStorage.setItem('customExercises', JSON.stringify(mergedExercises));
+                }
+
+                if (cloudData.localPlans) {
+                    const localPlans = getLocalPlans();
+                    // 合并计划数据，避免重复
+                    const existingIds = new Set(localPlans.map(p => p.id));
+                    const newPlans = cloudData.localPlans.filter(p => !existingIds.has(p.id));
+                    const mergedPlans = [...localPlans, ...newPlans];
+                    localStorage.setItem('localPlans', JSON.stringify(mergedPlans));
+                }
+
+                // 更新本地同步时间戳
+                if (cloudData.lastSyncTime) {
+                    localStorage.setItem('lastSyncTime', cloudData.lastSyncTime);
+                }
+
+                console.log('从云端同步数据成功');
+                return true;
+            } else {
+                console.log('云端没有更新的数据');
+                return false;
+            }
+        } catch (error) {
+            console.error('从云端同步数据异常:', error);
+            return false;
+        }
+    },
+
+    // 检查是否需要同步
+    shouldSync() {
+        const lastSyncTime = localStorage.getItem('lastSyncTime');
+        if (!lastSyncTime) return true;
+
+        const lastSync = new Date(lastSyncTime);
+        const now = new Date();
+        const hoursDiff = (now - lastSync) / (1000 * 60 * 60);
+
+        // 如果超过1小时没有同步，则需要同步
+        return hoursDiff > 1;
+    },
+
+    // 执行双向同步
+    async syncBothWays() {
+        try {
+            console.log('开始执行双向数据同步...');
+
+            // 1. 先从云端同步数据到本地
+            await this.syncFromCloud();
+
+            // 2. 再将本地数据同步到云端
+            await this.syncToCloud();
+
+            console.log('双向数据同步完成');
+            return true;
+        } catch (error) {
+            console.error('双向同步失败:', error);
+            return false;
+        }
+    }
+};
+
 // 本地存储辅助方法（计划名称）
 
 function getCustomPlanNames() {
     try {
         const saved = localStorage.getItem('customPlanNames');
         return saved ? JSON.parse(saved) : [];
-    } catch (e) {
+      } catch (e) {
         return [];
+      }
     }
-}
 
 function saveCustomPlanName(planName) {
     if (!planName || !planName.trim()) return false;
-
+      
     const customPlanNames = getCustomPlanNames();
     const trimmedName = planName.trim();
-
+      
     if (customPlanNames.includes(trimmedName)) {
         return false;
-    }
-
+      }
+      
     if (COMMON_PLAN_NAMES.includes(trimmedName)) {
         return false;
-    }
-
+      }
+      
     customPlanNames.push(trimmedName);
-    try {
+      try {
         localStorage.setItem('customPlanNames', JSON.stringify(customPlanNames));
         return true;
-    } catch (e) {
+      } catch (e) {
         console.error('保存失败:', e);
         return false;
+      }
     }
-}
 
 function deleteCustomPlanName(planName) {
     const customPlanNames = getCustomPlanNames();
     const index = customPlanNames.indexOf(planName);
-    if (index > -1) {
+      if (index > -1) {
         customPlanNames.splice(index, 1);
         try {
             localStorage.setItem('customPlanNames', JSON.stringify(customPlanNames));
-            return true;
+          return true;
         } catch (e) {
-            console.error('删除失败:', e);
-            return false;
+          console.error('删除失败:', e);
+          return false;
         }
+      }
+      return false;
     }
-    return false;
+
+// 处理动作名称按钮点击
+function handleExerciseButtonClick(index, type, event) {
+    console.log(`动作名称按钮点击: 索引=${index}, 类型=${type}`);
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (type === 'select') {
+        console.log(`切换动作名称下拉菜单: ${index}`);
+        toggleExerciseNameDropdown(index);
+    } else if (type === 'save') {
+        console.log(`保存动作名称: ${index}`);
+        saveExerciseName(index);
+    }
 }
 
 // 切换动作名称下拉菜单
 function toggleExerciseNameDropdown(index) {
+    console.log(`切换下拉菜单状态: ${index}, 当前状态: ${exercises[index].showDropdown}`);
     exercises[index].showDropdown = !exercises[index].showDropdown;
     renderExercises();
 }
@@ -2224,14 +2449,14 @@ function getFilteredCommonExercises(index) {
 // 获取过滤后的自定义动作
 function getFilteredCustomExercises(index) {
     const exercise = exercises[index];
-    const customExercises = getCustomExercises();
+      const customExercises = getCustomExercises();
     if (!exercise.searchTerm) return customExercises;
     return customExercises.filter(name =>
         name.toLowerCase().includes(exercise.searchTerm.toLowerCase())
     );
-}
+    }
 
-// 选择动作名称
+    // 选择动作名称
 function selectExerciseName(index, name) {
     exercises[index].name = name;
     exercises[index].showDropdown = false;
@@ -2261,8 +2486,8 @@ function saveExerciseName(index) {
         showToast('已保存为常用动作', 'success');
         exercises[index].showDropdown = false;
         renderExercises();
-      } else {
-        showToast('保存失败', 'error');
+        } else {
+          showToast('保存失败', 'error');
     }
 }
 
@@ -2279,7 +2504,7 @@ function deleteExerciseName(name, event) {
     if (deleteCustomExercise(name)) {
         showToast('已删除', 'success');
         renderExercises();
-      } else {
+        } else {
         showToast('删除失败', 'error');
       }
     }
@@ -2374,6 +2599,153 @@ function deleteCustomExercise(exerciseName) {
     }
     return false;
 }
+    </script>
+
+    <!-- 数据同步功能 -->
+    <script>
+        // 检查是否有未同步的本地计划
+        function checkUnsyncedPlans() {
+            try {
+                const localPlans = JSON.parse(localStorage.getItem('localPlans') || '[]');
+                const unsyncedPlans = localPlans.filter(plan => !plan.synced);
+
+                if (unsyncedPlans.length > 0) {
+                    // 显示同步提示
+                    const syncBanner = document.createElement('div');
+                    syncBanner.id = 'syncBanner';
+                    syncBanner.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        background: linear-gradient(135deg, #FFA500, #FF8C00);
+                        color: white;
+                        padding: 8px 16px;
+                        text-align: center;
+                        font-size: 14px;
+                        z-index: 10000;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    `;
+                    syncBanner.innerHTML = `
+                        <span>您有 ${unsyncedPlans.length} 个计划未同步到服务器</span>
+                        <button id="syncBtn" style="
+                            margin-left: 12px;
+                            padding: 4px 12px;
+                            background: rgba(255,255,255,0.2);
+                            border: 1px solid rgba(255,255,255,0.3);
+                            border-radius: 4px;
+                            color: white;
+                            cursor: pointer;
+                            font-size: 12px;
+                        ">立即同步</button>
+                        <button id="dismissSync" style="
+                            margin-left: 8px;
+                            background: none;
+                            border: none;
+                            color: rgba(255,255,255,0.8);
+                            cursor: pointer;
+                            font-size: 12px;
+                        ">×</button>
+                    `;
+
+                    document.body.insertBefore(syncBanner, document.body.firstChild);
+
+                    // 绑定同步按钮事件
+                    document.getElementById('syncBtn').addEventListener('click', syncLocalPlans);
+                    document.getElementById('dismissSync').addEventListener('click', () => {
+                        syncBanner.remove();
+                    });
+                }
+            } catch (error) {
+                console.error('检查未同步计划失败:', error);
+            }
+        }
+
+        // 同步本地计划到服务器
+        async function syncLocalPlans() {
+            try {
+                const localPlans = JSON.parse(localStorage.getItem('localPlans') || '[]');
+                const unsyncedPlans = localPlans.filter(plan => !plan.synced);
+
+                if (unsyncedPlans.length === 0) {
+                    showToast('没有需要同步的计划', 'info');
+                    return;
+                }
+                
+                showLoading(true, '正在同步计划...');
+      
+                let syncedCount = 0;
+                let failedCount = 0;
+      
+                for (const localPlan of unsyncedPlans) {
+                    try {
+                        // 转换数据格式
+      const apiData = {
+                            name: localPlan.name,
+                            duration: parseInt(localPlan.duration) || 30,
+                            difficulty: localPlan.difficulty || 'intermediate',
+                            notes: localPlan.notes || '',
+                            exercises: localPlan.exercises.map(ex => ({
+          name: ex.name,
+          sets: parseInt(ex.sets) || 3,
+          reps: ex.reps,
+          rest: parseInt(ex.rest) || 60,
+          notes: ex.notes || ''
+        }))
+      };
+      
+        const response = await API.createPlan(apiData);
+        if (response.code === 200) {
+                            // 标记为已同步
+                            localPlan.synced = true;
+                            localPlan.serverPlanId = response.data.planId;
+                            syncedCount++;
+          } else {
+                            failedCount++;
+                            console.error('同步计划失败:', localPlan.name, response);
+        }
+      } catch (error) {
+                        failedCount++;
+                        console.error('同步计划异常:', localPlan.name, error);
+                    }
+                }
+
+                // 保存更新后的本地计划
+                localStorage.setItem('localPlans', JSON.stringify(localPlans));
+
+                showLoading(false);
+
+                if (syncedCount > 0) {
+                    showToast(`成功同步 ${syncedCount} 个计划${failedCount > 0 ? `，${failedCount} 个失败` : ''}`, 'success');
+                } else {
+                    showToast('同步失败，请稍后重试', 'error');
+                }
+
+                // 隐藏同步提示
+                const syncBanner = document.getElementById('syncBanner');
+                if (syncBanner) {
+                    syncBanner.remove();
+                }
+
+                // 如果有成功的同步，刷新页面数据
+                if (syncedCount > 0) {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+
+            } catch (error) {
+                showLoading(false);
+                console.error('同步过程异常:', error);
+                showToast('同步过程出现异常，请稍后重试', 'error');
+            }
+        }
+
+        // 在页面加载完成后检查未同步计划
+        document.addEventListener('DOMContentLoaded', function() {
+            // 延迟执行，让其他初始化完成
+            setTimeout(checkUnsyncedPlans, 2000);
+        });
     </script>
 
     <!-- API 模块 -->
