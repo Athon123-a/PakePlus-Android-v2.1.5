@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健身助手 - AI全能私教助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+            background-color: #0a0a1a;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px;
+        }
+        
+        /* 沉浸式背景与微光效果 */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0a0a1a 100%);
+            z-index: -2;
+            overflow: hidden;
+        }
+        
+        .light-flow {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            background: radial-gradient(circle at 30% 40%, rgba(0, 209, 255, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 60%, rgba(0, 150, 255, 0.1) 0%, transparent 50%);
+            animation: lightFlow 20s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+        
+        @keyframes lightFlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(5%, 5%) scale(1.1);
+            }
+            100% {
+                transform: translate(10%, 10%) scale(1.2);
+            }
+        }
+        
+        /* 容器样式 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 顶部栏 */
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            background-color: rgba(10, 10, 26, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .ai-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .ai-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00D1FF, #0072FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .status-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .status-text.thinking::after {
+            content: '';
+            animation: typing 1.5s infinite;
+        }
+        
+        @keyframes typing {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        
+        .settings-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        /* 主聊天区域 */
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 0;
+        }
+        
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        /* 聊天气泡 */
+        .user-message, .ai-message {
+            max-width: 80%;
+            padding: 15px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        .message-time {
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .message-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(204, 255, 0, 0.1));
+            border: 1px solid rgba(204, 255, 0, 0.3);
+            color: #ffffff;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: #ffffff;
+            border-bottom-left-radius: 5px;
+        }
+        
+        /* 智能卡片 */
+        .card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00D1FF, #CCFF00);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(0, 209, 255, 0.5);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title-icon {
+            font-size: 20px;
+        }
+        
+        /* 计划生成界面 */
+        .plan-generator {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .generator-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .generator-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .generator-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .requirements-section {
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .requirement-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .requirement-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 209, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .requirement-card.selected {
+            background: rgba(0, 209, 255, 0.15);
+            border-color: #00D1FF;
+        }
+
+        .requirement-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .requirement-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .custom-input-section {
+            margin-top: 16px;
+        }
+
+        .custom-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .custom-textarea:focus {
+            outline: none;
+            border-color: #00D1FF;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .custom-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            border: none;
+            border-radius: 12px;
+            color: #121212;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(204, 255, 0, 0.4);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* 计划卡片 */
+        .workout-plan-card {
+            margin: 20px 0;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .plan-info {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .plan-info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .plan-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .plan-action-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .plan-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .plan-action-btn.primary {
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            border-color: transparent;
+            color: #121212;
+            font-weight: 600;
+        }
+
+        .plan-action-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+        }
+        
+        .workout-plan-card .day-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .workout-plan-card .day-nav::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .workout-plan-card .day-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+        
+        .workout-plan-card .day-btn {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+        
+        .workout-plan-card .day-btn.active {
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            border-color: transparent;
+            color: #121212;
+            font-weight: 600;
+        }
+
+        .workout-plan-card .day-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .workout-plan-card .day-content {
+            min-height: 200px;
+        }
+        
+        .workout-plan-card .exercise-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .workout-plan-card .exercise-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 209, 255, 0.3);
+        }
+        
+        .workout-plan-card .exercise-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .workout-plan-card .exercise-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #00D1FF, #0072FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .workout-plan-card .exercise-details {
+            flex: 1;
+        }
+
+        .exercise-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .exercise-specs {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+        
+        .workout-plan-card .apply-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .workout-plan-card .apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(204, 255, 0, 0.4);
+        }
+
+        .workout-plan-card .apply-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* 食谱卡片 */
+        .diet-card {
+            padding: 20px;
+        }
+        
+        .diet-card .nutrition-overview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .diet-card .nutrition-chart {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .diet-card .macros-info {
+            flex: 1;
+            padding-left: 20px;
+        }
+        
+        .diet-card .macro-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .diet-card .macro-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .diet-card .protein { background-color: #FF6B6B; }
+        .diet-card .carbs { background-color: #4ECDC4; }
+        .diet-card .fats { background-color: #FFD166; }
+        
+        .diet-card .food-list {
+            margin-bottom: 15px;
+        }
+        
+        .diet-card .food-list h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #00D1FF;
+        }
+        
+        .diet-card .food-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .diet-card .food-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .diet-card .add-to-diet-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #00D1FF, #0072FF);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .diet-card .add-to-diet-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 209, 255, 0.3);
+        }
+        
+        /* 教学卡片 */
+        .instruction-card .video-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .instruction-card .video-placeholder {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .instruction-card .exercise-description {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .instruction-card .start-training-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .instruction-card .start-training-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(204, 255, 0, 0.3);
+        }
+        
+        /* 快捷指令栏 */
+        .action-dock {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px;
+            background-color: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .action-dock::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .quick-action-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: #ffffff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 209, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* 输入栏 */
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background-color: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            bottom: 80px;
+            z-index: 99;
+        }
+        
+        .voice-input-btn, .image-upload-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .voice-input-btn:hover, .image-upload-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .voice-input-btn.recording {
+            background-color: #FF6B6B;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+            }
+        }
+        
+        .text-input {
+            flex: 1;
+            padding: 12px 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .text-input:focus {
+            border-color: #00D1FF;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .text-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            border: none;
+            color: #121212;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-color: #0a0a1a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .close-modal-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 设置模态框 */
+        .settings-modal .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .settings-modal .settings-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 0 -25px;
+            padding-left: 25px;
+            padding-right: 25px;
+        }
+        
+        .settings-modal .option-label {
+            font-size: 16px;
+        }
+        
+        .settings-modal .option-value {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* 加载动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 26, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00D1FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 成功提示 */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: toastIn 0.3s ease;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            background: rgba(82, 196, 26, 0.9);
+        }
+        
+        .toast.error {
+            background: rgba(255, 77, 79, 0.9);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+            }
+            
+            .user-message, .ai-message {
+                max-width: 85%;
+            }
+            
+            .action-dock {
+                padding: 10px;
+            }
+            
+            .requirements-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .diet-card .nutrition-overview {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .diet-card .macros-info {
+                padding-left: 0;
+                margin-top: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .requirements-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景容器 -->
+    <div class="background-container">
+        <div class="light-flow"></div>
+    </div>
+
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">AI正在生成计划...</div>
+    </div>
+
+    <!-- 提示弹窗 -->
+    <div class="toast" id="toast"></div>
+    
+    <div class="container">
+        <!-- 顶部栏 -->
+        <header class="header">
+            <button class="back-btn" id="backBtn">←</button>
+            <div class="ai-status">
+                <div class="ai-icon">AI</div>
+                <div class="status-text" id="aiStatus">HI, 我是你的私人教练</div>
+            </div>
+            <button class="settings-button" id="settingsButton">⚙️</button>
+        </header>
+        
+        <!-- 主聊天区域 -->
+        <div class="chat-container" id="chatContainer">
+            <!-- 内容将通过JavaScript动态生成 -->
+        </div>
+        
+        <!-- 快捷指令栏 -->
+        <div class="action-dock" id="actionDock">
+            <button class="quick-action-btn" data-action="增肌计划">💪 增肌计划</button>
+            <button class="quick-action-btn" data-action="减脂计划">🔥 减脂计划</button>
+            <button class="quick-action-btn" data-action="提升耐力">🏃 提升耐力</button>
+            <button class="quick-action-btn" data-action="动作指导">📚 动作指导</button>
+            </div>
+        
+        <!-- 输入栏 -->
+        <div class="input-container">
+            <button class="voice-input-btn" id="voiceInputBtn" title="语音输入">🎤</button>
+            <input type="text" class="text-input" id="messageInput" placeholder="输入你的问题或需求...">
+            <button class="send-btn" id="sendBtn" title="发送">➤</button>
+        </div>
+    </div>
+    
+    <!-- 设置模态框 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">设置</h3>
+                <button class="close-modal-btn" id="closeSettingsModal">×</button>
+            </div>
+            <div class="settings-option">
+                <div class="option-label">训练风格偏好</div>
+                <div class="option-value" id="trainingStyle">均衡模式</div>
+            </div>
+            <div class="settings-option">
+                <div class="option-label">AI反馈风格</div>
+                <div class="option-value" id="feedbackStyle">温和模式</div>
+            </div>
+            <div class="settings-option">
+                <div class="option-label">语言偏好</div>
+                <div class="option-value">简体中文</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+      <a href="home.html" class="nav-item">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">首页</div>
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <div class="nav-icon">📅</div>
+        <div class="nav-label">日历</div>
+      </a>
+      <a href="community.html" class="nav-item">
+        <div class="nav-icon">👥</div>
+        <div class="nav-label">社区</div>
+      </a>
+      <a href="profile.html" class="nav-item">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">我的</div>
+      </a>
+    </nav>
+
+    <style>
+      /* 底部导航栏样式 */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(10, 10, 26, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 0;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        min-width: 0;
+      }
+
+      .nav-item:hover {
+        color: #00D1FF;
+      }
+
+      .nav-item.active {
+        color: #CCFF00;
+      }
+
+      .nav-icon {
+        font-size: 24px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+      }
+
+      .nav-item.active .nav-icon {
+        transform: scale(1.1);
+      }
+
+      .nav-label {
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      @media (max-width: 480px) {
+        .nav-label {
+          display: none;
+        }
+
+        .nav-icon {
+          font-size: 22px;
+          margin-bottom: 0;
+        }
+      }
+
+      /* 快捷操作按钮 */
+      .quick-action-container {
+        display: flex;
+        justify-content: center;
+        margin: 16px 0;
+      }
+
+      .quick-action-btn {
+        background: linear-gradient(135deg, #CCFF00, #00D1FF);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #121212;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+      }
+
+      .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(204, 255, 0, 0.4);
+      }
+
+      .quick-action-btn:active {
+        transform: translateY(0);
+      }
+    </style>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+    <script>
+        // 全局变量
+        let currentMode = 'chat'; // chat, generate
+        let selectedRequirements = [];
+        let generatedPlan = null;
+
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                mode: params.get('mode'),
+                target: params.get('target'),
+                planId: params.get('planId')
+            };
+        }
+
+        // 初始化页面
+        function initializePage() {
+            // 检查用户登录状态
+            const token = API.getToken();
+            if (!token) {
+                console.log('用户未登录，跳转到登录页');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            console.log('用户已登录，Token:', token ? '已设置' : '未设置');
+
+            // 测试API连接
+            testAPIConnection();
+
+            const urlParams = getUrlParams();
+            const chatContainer = document.getElementById('chatContainer');
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const voiceInputBtn = document.getElementById('voiceInputBtn');
+            const backBtn = document.getElementById('backBtn');
+            const settingsButton = document.getElementById('settingsButton');
+            const settingsModal = document.getElementById('settingsModal');
+            const closeSettingsModal = document.getElementById('closeSettingsModal');
+            const aiStatus = document.getElementById('aiStatus');
+            const actionDock = document.getElementById('actionDock');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const toast = document.getElementById('toast');
+            
+            // 返回按钮
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    if (window.history.length > 1) {
+                        window.history.back();
+                } else {
+                        window.location.href = 'home.html';
+                    }
+                });
+            }
+
+            // 检查URL参数，判断是否为生成模式
+            if (urlParams.mode === 'generate') {
+                currentMode = 'generate';
+                showPlanGenerator(urlParams.target);
+            } else if (urlParams.planId) {
+                // 加载已有计划
+                loadPlan(urlParams.planId);
+                } else {
+                // 普通聊天模式
+                showWelcomeMessage();
+                }
+
+            // 发送按钮
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+            }
+            
+            // 输入框回车
+            if (messageInput) {
+            messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            messageInput.addEventListener('input', function() {
+                    sendBtn.disabled = !this.value.trim();
+                });
+                }
+            
+            // 语音输入
+            if (voiceInputBtn) {
+            voiceInputBtn.addEventListener('click', function() {
+                this.classList.toggle('recording');
+                if (this.classList.contains('recording')) {
+                    aiStatus.textContent = '正在录音...';
+                } else {
+                    aiStatus.textContent = 'HI, 我是你的私人教练';
+                        // 模拟语音识别
+                    setTimeout(() => {
+                            if (messageInput) {
+                                messageInput.value = '我想制定一个减脂计划';
+                                messageInput.focus();
+                            }
+                    }, 500);
+                }
+            });
+            }
+
+            // 快捷操作按钮
+            const quickActionBtns = document.querySelectorAll('.quick-action-btn');
+            quickActionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    if (messageInput) {
+                        messageInput.value = action;
+                        messageInput.focus();
+                    }
+                });
+            });
+            
+            // 设置按钮
+            if (settingsButton) {
+            settingsButton.addEventListener('click', function() {
+                    if (settingsModal) {
+                settingsModal.style.display = 'flex';
+                    }
+            });
+            }
+            
+            // 关闭设置模态框
+            if (closeSettingsModal) {
+            closeSettingsModal.addEventListener('click', function() {
+                    if (settingsModal) {
+                settingsModal.style.display = 'none';
+                    }
+                });
+            }
+
+            // 点击模态框背景关闭
+            if (settingsModal) {
+                settingsModal.addEventListener('click', function(e) {
+                    if (e.target === settingsModal) {
+                        settingsModal.style.display = 'none';
+                    }
+                });
+            }
+
+            // 初始化发送按钮状态
+            if (sendBtn && messageInput) {
+                sendBtn.disabled = !messageInput.value.trim();
+            }
+        }
+
+        // 显示欢迎消息
+        function showWelcomeMessage() {
+            const chatContainer = document.getElementById('chatContainer');
+            if (!chatContainer) return;
+
+            addAIMessage('嗨！我是你的AI私人教练。我可以帮你制定健身计划、提供饮食建议、解答器械使用问题，还能进行动作纠错。有什么可以帮助你的？');
+        }
+
+        // 显示计划生成界面
+        function showPlanGenerator(target) {
+            const chatContainer = document.getElementById('chatContainer');
+            if (!chatContainer) return;
+
+            chatContainer.innerHTML = '';
+
+            const targetMap = {
+                'weight-loss': { icon: '🔥', name: '减脂塑形', desc: '专注于燃烧脂肪，塑造完美身材' },
+                'muscle-gain': { icon: '💪', name: '增肌增重', desc: '增加肌肉量，提升力量' },
+                'endurance': { icon: '🏃', name: '提升耐力', desc: '提高心肺功能和运动耐力' },
+                'flexibility': { icon: '🧘', name: '柔韧性', desc: '改善身体柔韧性和灵活性' }
+            };
+
+            const targetInfo = targetMap[target] || { icon: '🎯', name: '综合训练', desc: '全面提升身体素质' };
+
+            const generatorHTML = `
+                <div class="plan-generator">
+                    <div class="generator-header">
+                        <div class="generator-title">${targetInfo.icon} ${targetInfo.name}</div>
+                        <div class="generator-desc">${targetInfo.desc}</div>
+                    </div>
+
+                    <div class="requirements-section">
+                        <div class="section-label">
+                            <span>📋</span>
+                            <span>选择你的需求（可多选）</span>
+                        </div>
+                        <div class="requirements-grid" id="requirementsGrid">
+                            <div class="requirement-card" data-requirement="duration">
+                                <div class="requirement-icon">⏱️</div>
+                                <div class="requirement-text">训练时长</div>
+                            </div>
+                            <div class="requirement-card" data-requirement="frequency">
+                                <div class="requirement-icon">📅</div>
+                                <div class="requirement-text">训练频率</div>
+                            </div>
+                            <div class="requirement-card" data-requirement="equipment">
+                                <div class="requirement-icon">🏋️</div>
+                                <div class="requirement-text">可用器械</div>
+                            </div>
+                            <div class="requirement-card" data-requirement="experience">
+                                <div class="requirement-icon">⭐</div>
+                                <div class="requirement-text">训练经验</div>
+                            </div>
+                            <div class="requirement-card" data-requirement="goal">
+                                <div class="requirement-icon">🎯</div>
+                                <div class="requirement-text">具体目标</div>
+                            </div>
+                            <div class="requirement-card" data-requirement="injury">
+                                <div class="requirement-icon">⚠️</div>
+                                <div class="requirement-text">伤病情况</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="custom-input-section">
+                        <div class="section-label">
+                            <span>✏️</span>
+                            <span>或直接描述你的需求</span>
+                        </div>
+                        <textarea 
+                            class="custom-textarea" 
+                            id="customRequirement" 
+                            placeholder="例如：我想每周训练4次，每次45分钟，主要在家用哑铃训练，目标是增肌..."
+                        ></textarea>
+                    </div>
+
+                    <button class="generate-btn" id="generatePlanBtn">
+                        <span>✨</span>
+                        <span>生成训练计划</span>
+                    </button>
+                </div>
+            `;
+
+            chatContainer.innerHTML = generatorHTML;
+            
+            // 需求卡片点击事件
+            const requirementCards = document.querySelectorAll('.requirement-card');
+            requirementCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    const requirement = this.getAttribute('data-requirement');
+                    if (this.classList.contains('selected')) {
+                        if (!selectedRequirements.includes(requirement)) {
+                            selectedRequirements.push(requirement);
+                        }
+                    } else {
+                        selectedRequirements = selectedRequirements.filter(r => r !== requirement);
+                    }
+                });
+            });
+            
+            // 生成计划按钮
+            const generateBtn = document.getElementById('generatePlanBtn');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', function() {
+                    const customReq = document.getElementById('customRequirement')?.value.trim() || '';
+                    
+                    if (selectedRequirements.length === 0 && !customReq) {
+                        showToast('请至少选择一个需求或填写需求描述', 'error');
+                        return;
+                    }
+
+                    generatePlan(target, selectedRequirements, customReq);
+                });
+            }
+        }
+
+        // 生成计划
+        async function generatePlan(target, requirements, customReq) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const chatContainer = document.getElementById('chatContainer');
+
+            // 显示加载动画
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('show');
+            }
+
+            // 更新加载提示
+            const steps = [
+                '分析你的需求...',
+                '匹配训练方案...',
+                '优化动作组合...',
+                '生成个性化计划...'
+            ];
+
+            let stepIndex = 0;
+            const stepInterval = setInterval(() => {
+                if (stepIndex < steps.length && loadingText) {
+                    loadingText.textContent = steps[stepIndex];
+                    stepIndex++;
+                } else {
+                    clearInterval(stepInterval);
+                }
+            }, 800);
+
+            try {
+                // 调用AI生成计划API
+                const response = await API.generatePlan(target, requirements, customReq);
+                
+                clearInterval(stepInterval);
+                
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('show');
+                }
+
+                if (response.code === 200) {
+                    // 转换API返回的数据格式
+                    const plan = {
+                        name: response.data.name,
+                        duration: response.data.duration,
+                        exercises: response.data.exercises.map(ex => ({
+                            name: ex.name,
+                            sets: ex.sets,
+                            reps: ex.reps,
+                            rest: ex.rest,
+                            icon: ex.icon || '💪'
+                        }))
+                    };
+                    
+                    generatedPlan = {
+                        ...plan,
+                        planId: response.data.planId
+                    };
+
+                    // 显示生成的计划
+                    displayGeneratedPlan(generatedPlan);
+                } else {
+                    showToast(response.message || '生成计划失败', 'error');
+                }
+            } catch (error) {
+                clearInterval(stepInterval);
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('show');
+                }
+                console.error('生成计划失败:', error);
+                showToast(error.message || '生成计划失败，请稍后重试', 'error');
+            }
+        }
+
+        // 生成模拟计划
+        function generateMockPlan(target, requirements, customReq) {
+            const plans = {
+                'weight-loss': {
+                    name: '高效减脂训练计划',
+                    duration: 45,
+                    exercises: [
+                        { name: '开合跳', sets: 3, reps: '30秒', rest: 30, icon: '🤸' },
+                        { name: '高抬腿', sets: 3, reps: '30秒', rest: 30, icon: '🏃' },
+                        { name: '波比跳', sets: 3, reps: '10次', rest: 45, icon: '💥' },
+                        { name: '平板支撑', sets: 3, reps: '30秒', rest: 30, icon: '🧘' },
+                        { name: '登山者', sets: 3, reps: '20次', rest: 30, icon: '⛰️' }
+                    ]
+                },
+                'muscle-gain': {
+                    name: '增肌力量训练计划',
+                    duration: 60,
+                    exercises: [
+                        { name: '哑铃卧推', sets: 4, reps: '8-10次', rest: 90, icon: '💪' },
+                        { name: '哑铃深蹲', sets: 4, reps: '10-12次', rest: 90, icon: '🏋️' },
+                        { name: '哑铃划船', sets: 4, reps: '10-12次', rest: 90, icon: '🚣' },
+                        { name: '哑铃肩推', sets: 3, reps: '10-12次', rest: 60, icon: '🏋️' },
+                        { name: '哑铃弯举', sets: 3, reps: '12-15次', rest: 60, icon: '💪' }
+                    ]
+                },
+                'endurance': {
+                    name: '耐力提升训练计划',
+                    duration: 40,
+                    exercises: [
+                        { name: '慢跑', sets: 1, reps: '20分钟', rest: 0, icon: '🏃' },
+                        { name: '跳绳', sets: 3, reps: '2分钟', rest: 30, icon: '🪢' },
+                        { name: '开合跳', sets: 3, reps: '1分钟', rest: 30, icon: '🤸' },
+                        { name: '高抬腿', sets: 3, reps: '1分钟', rest: 30, icon: '🏃' }
+                    ]
+                },
+                'flexibility': {
+                    name: '柔韧性提升计划',
+                    duration: 30,
+                    exercises: [
+                        { name: '动态拉伸', sets: 1, reps: '10分钟', rest: 0, icon: '🧘' },
+                        { name: '瑜伽体式', sets: 1, reps: '15分钟', rest: 0, icon: '🧘' },
+                        { name: '静态拉伸', sets: 1, reps: '5分钟', rest: 0, icon: '🧘' }
+                    ]
+                }
+            };
+
+            return plans[target] || plans['weight-loss'];
+        }
+
+        // 显示生成的计划
+        function displayGeneratedPlan(plan) {
+            const chatContainer = document.getElementById('chatContainer');
+            if (!chatContainer) return;
+
+            // 添加AI消息
+            addAIMessage(`我已经为你生成了"${plan.name}"！这个计划包含${plan.exercises.length}个动作，预计时长${plan.duration}分钟。你可以查看下方的详细计划，并一键同步到日历中。`);
+
+            // 创建计划卡片
+            const planCard = document.createElement('div');
+            planCard.className = 'card workout-plan-card';
+            planCard.innerHTML = `
+                <div class="plan-header">
+                    <div>
+                        <h3 class="card-title">
+                            <span class="card-title-icon">🎯</span>
+                            <span>${plan.name}</span>
+                        </h3>
+                        <div class="plan-info">
+                            <div class="plan-info-item">⏱️ ${plan.duration}分钟</div>
+                            <div class="plan-info-item">🏋️ ${plan.exercises.length}个动作</div>
+                            <div class="plan-info-item">📅 建议每周3-4次</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="day-content" id="planExercises">
+                    ${plan.exercises.map((ex, index) => `
+                        <div class="exercise-item">
+                            <div class="exercise-info">
+                                <div class="exercise-icon">${ex.icon}</div>
+                                <div class="exercise-details">
+                                    <div class="exercise-name">${ex.name}</div>
+                                    <div class="exercise-specs">${ex.sets}组 × ${ex.reps} | 休息${ex.rest}秒</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="plan-actions" style="margin-top: 16px; display: flex; gap: 8px;">
+                    <button class="plan-action-btn" id="editPlanBtn">✏️ 编辑计划</button>
+                    <button class="plan-action-btn primary" id="syncToCalendarBtn">📅 同步到日历</button>
+                </div>
+            `;
+
+            chatContainer.appendChild(planCard);
+
+            // 同步到日历按钮
+            const syncBtn = document.getElementById('syncToCalendarBtn');
+            if (syncBtn) {
+                syncBtn.addEventListener('click', function() {
+                    syncPlanToCalendar(plan);
+                });
+            }
+
+            // 编辑计划按钮
+            const editBtn = document.getElementById('editPlanBtn');
+            if (editBtn) {
+                editBtn.addEventListener('click', function() {
+                    window.location.href = `manual-plan-creator.html?planData=${encodeURIComponent(JSON.stringify(plan))}`;
+                });
+            }
+
+            // 滚动到底部
+            scrollToBottom();
+        }
+            
+        // 同步计划到日历
+        async function syncPlanToCalendar(plan) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('show');
+            }
+            if (loadingText) {
+                loadingText.textContent = '正在同步到日历...';
+            }
+
+            try {
+                // 获取今天的日期
+                const today = new Date();
+                const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                
+                // 调用添加计划到日历API
+                const response = await API.addPlanToCalendar(plan.planId, dateStr, null, 'none');
+                
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('show');
+                }
+
+                if (response.code === 200) {
+                    showToast('计划已成功同步到日历！', 'success');
+
+                    // 延迟跳转
+            setTimeout(() => {
+                        window.location.href = 'calendar.html';
+                    }, 1500);
+                } else {
+                    showToast(response.message || '同步失败，请稍后重试', 'error');
+                }
+            } catch (error) {
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('show');
+                }
+                console.error('同步计划失败:', error);
+                showToast(error.message || '同步失败，请稍后重试', 'error');
+            }
+        }
+
+        // 添加用户消息
+        function addUserMessage(content) {
+            const chatContainer = document.getElementById('chatContainer');
+            if (!chatContainer) return;
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-container';
+            messageDiv.innerHTML = `
+                <div class="user-message">${escapeHtml(content)}</div>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // 添加AI消息
+        function addAIMessage(content) {
+            const chatContainer = document.getElementById('chatContainer');
+            if (!chatContainer) return;
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-container';
+            messageDiv.innerHTML = `
+                <div class="ai-message">${formatAIResponse(escapeHtml(content))}</div>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // 检查是否是生成计划的请求
+        function checkIfGeneratePlanRequest(message) {
+            const generateKeywords = [
+                '生成', '创建', '制定', '设计', '做', '帮我', '给我',
+                '计划', '训练计划', '健身计划', 'workout', 'plan',
+                '练胸', '练背', '练腿', '练肩', '练手臂', '练核心',
+                '增肌', '减脂', '塑形', '力量训练', '有氧', 'HIIT'
+            ];
+
+            const lowerMessage = message.toLowerCase();
+            return generateKeywords.some(keyword =>
+                lowerMessage.includes(keyword.toLowerCase())
+            );
+        }
+
+        // 处理生成计划的请求
+        async function handleGeneratePlanRequest(message) {
+            const aiStatus = document.getElementById('aiStatus');
+
+            try {
+                // 分析用户消息，提取训练目标
+                const target = extractTrainingTarget(message);
+                const requirements = extractRequirements(message);
+                const customRequirement = message;
+
+                console.log('提取的训练目标:', target);
+                console.log('提取的需求:', requirements);
+                console.log('原始消息:', customRequirement);
+
+                // 更新AI状态
+                if (aiStatus) {
+                    aiStatus.textContent = 'AI正在生成计划';
+                }
+
+                console.log('开始调用AI生成计划API...');
+
+                // 调用AI生成计划API
+                const response = await API.generatePlan(target, requirements, customRequirement);
+
+                console.log('AI生成计划API响应:', response);
+
+                if (aiStatus) {
+                    aiStatus.textContent = 'HI, 我是你的私人教练';
+                    aiStatus.classList.remove('thinking');
+                }
+
+                if (response.code === 200) {
+                    // 显示生成的计划
+                    displayGeneratedPlan(response.data);
+
+                    // 询问是否添加到日历
+                    setTimeout(() => {
+                        if (confirm('计划生成成功！是否添加到日历？')) {
+                            addPlanToCalendar(response.data.planId);
+                        }
+                    }, 1000);
+                } else {
+                    console.log('API返回错误:', response.message);
+                    addAIMessage(response.message || '生成计划失败，请稍后重试。');
+                }
+            } catch (error) {
+                if (aiStatus) {
+                    aiStatus.textContent = 'HI, 我是你的私人教练';
+                    aiStatus.classList.remove('thinking');
+                }
+                console.error('生成计划失败:', error);
+                console.error('错误详情:', {
+                    message: error.message,
+                    name: error.name,
+                    httpStatus: error.httpStatus,
+                    httpStatusText: error.httpStatusText
+                });
+
+                // 提供备用方案
+                const fallbackMessage = generateFallbackPlan(message);
+                addAIMessage(fallbackMessage);
+            }
+        }
+
+        // 提取训练目标
+        function extractTrainingTarget(message) {
+            const targetMap = {
+                '减脂': 'weight-loss',
+                '增肌': 'muscle-gain',
+                '耐力': 'endurance',
+                '柔韧': 'flexibility',
+                '练胸': 'muscle-gain',
+                '练背': 'muscle-gain',
+                '练腿': 'muscle-gain',
+                '练肩': 'muscle-gain',
+                '练手臂': 'muscle-gain',
+                '练核心': 'muscle-gain'
+            };
+
+            for (const [keyword, target] of Object.entries(targetMap)) {
+                if (message.includes(keyword)) {
+                    return target;
+                }
+            }
+
+            return 'muscle-gain'; // 默认增肌
+        }
+
+        // 提取需求
+        function extractRequirements(message) {
+            const requirements = [];
+
+            if (message.includes('30分钟') || message.includes('30分钟内') || message.includes('30min')) {
+                requirements.push('duration');
+            }
+
+            if (message.includes('器械') || message.includes('哑铃') || message.includes('跑步机') ||
+                message.includes('equipment') || message.includes('gym')) {
+                requirements.push('equipment');
+            }
+
+            if (message.includes('初学者') || message.includes('新手') || message.includes('beginner')) {
+                requirements.push('experience');
+            }
+
+            return requirements;
+        }
+
+        // 显示生成的计划
+        function displayGeneratedPlan(planData) {
+            const planHtml = `
+🎯 **${planData.name}**
+
+⏱️ 预计时长：${planData.duration}分钟
+📊 难度：${planData.difficulty === 'beginner' ? '初级' :
+                planData.difficulty === 'intermediate' ? '中级' : '高级'}
+🔥 动作数量：${planData.exercises?.length || 0}
+
+**训练动作：**
+
+${planData.exercises?.map((exercise, index) => `
+${index + 1}. **${exercise.name}**
+   - 组数：${exercise.sets}
+   - 次数：${exercise.reps}
+   - 休息：${exercise.rest}秒
+   ${exercise.notes ? `- 提示：${exercise.notes}` : ''}
+`).join('\n') || '暂无动作数据'}
+
+开始训练前请做好热身，训练中注意安全。如有不适请立即停止。`;
+
+            addAIMessage(planHtml);
+        }
+
+        // 生成备用计划
+        function generateFallbackPlan(message) {
+            const lowerMessage = message.toLowerCase();
+
+            let planName = '个性化训练计划';
+            let target = 'muscle-gain';
+            let exercises = [];
+
+            // 根据用户消息生成相应的计划
+            if (lowerMessage.includes('练腿')) {
+                planName = '腿部力量训练计划';
+                target = 'muscle-gain';
+                exercises = [
+                    { name: '深蹲', sets: 3, reps: '12-15', rest: 60, notes: '保持背部挺直，膝盖不要超过脚尖' },
+                    { name: '腿举', sets: 3, reps: '10-12', rest: 60, notes: '控制速度，避免惯性' },
+                    { name: '腿屈伸', sets: 3, reps: '12-15', rest: 45, notes: '注意膝关节安全' },
+                    { name: '小腿举', sets: 3, reps: '15-20', rest: 45, notes: '感受小腿肌肉发力' },
+                    { name: '弓步蹲', sets: 3, reps: '10每侧', rest: 60, notes: '保持身体平衡' }
+                ];
+            } else if (lowerMessage.includes('练胸')) {
+                planName = '胸部训练计划';
+                target = 'muscle-gain';
+                exercises = [
+                    { name: '平板卧推', sets: 3, reps: '8-12', rest: 90, notes: '保持肩膀后收，胸部发力' },
+                    { name: '哑铃飞鸟', sets: 3, reps: '10-12', rest: 60, notes: '感受胸部拉伸和收缩' },
+                    { name: '上斜卧推', sets: 3, reps: '10-12', rest: 75, notes: '注意肩部安全' },
+                    { name: '俯卧撑', sets: 3, reps: '12-15', rest: 60, notes: '保持身体成直线' }
+                ];
+            } else if (lowerMessage.includes('减脂') || lowerMessage.includes('瘦身')) {
+                planName = '减脂训练计划';
+                target = 'weight-loss';
+                exercises = [
+                    { name: '跑步机快走', sets: 1, reps: '20分钟', rest: 0, notes: '保持中等强度，心率控制在130-150' },
+                    { name: '波比跳', sets: 3, reps: '30秒', rest: 30, notes: '爆发力练习，注意落地缓冲' },
+                    { name: '登山跑', sets: 3, reps: '30秒', rest: 30, notes: '核心和心肺双重训练' },
+                    { name: '深蹲跳', sets: 3, reps: '15次', rest: 45, notes: '爆发力和下肢力量' },
+                    { name: '平板支撑', sets: 3, reps: '30-45秒', rest: 60, notes: '核心稳定性训练' }
+                ];
+            } else {
+                // 默认全身训练计划
+                planName = '全身力量训练计划';
+                exercises = [
+                    { name: '深蹲', sets: 3, reps: '12-15', rest: 60, notes: '基础下肢力量' },
+                    { name: '平板卧推', sets: 3, reps: '8-12', rest: 90, notes: '胸部和三头肌' },
+                    { name: '硬拉', sets: 3, reps: '8-10', rest: 90, notes: '背部和臀部' },
+                    { name: '肩部推举', sets: 3, reps: '10-12', rest: 60, notes: '肩部力量' },
+                    { name: ' biceps弯举', sets: 3, reps: '10-12', rest: 60, notes: '二头肌' }
+                ];
+            }
+
+            const planHtml = `
+🤖 **AI服务暂时不可用，已为您生成基础训练计划**
+
+🎯 **${planName}**
+
+⏱️ 预计时长：45分钟
+📊 难度：中级
+🔥 动作数量：${exercises.length}
+
+**训练动作：**
+
+${exercises.map((exercise, index) => `
+${index + 1}. **${exercise.name}**
+   - 组数：${exercise.sets}
+   - 次数：${exercise.reps}
+   - 休息：${exercise.rest}秒
+   - 提示：${exercise.notes}
+`).join('\n')}
+
+**训练建议：**
+• 训练前请做好5-10分钟热身
+• 训练中保持正确姿势，避免受伤
+• 训练后进行拉伸放松
+• 如有身体不适请立即停止
+
+由于AI服务暂时不可用，建议您使用手动创建计划功能获得更个性化的训练方案。
+
+💡 **快捷操作：**
+• 点击下方"创建计划"按钮手动制定详细计划
+• 或稍后重试AI生成功能`;
+
+            // 添加手动创建计划的快捷按钮
+            setTimeout(() => {
+                addQuickActionButton();
+            }, 1000);
+
+            return planHtml;
+        }
+
+        // 添加快捷操作按钮
+        function addQuickActionButton() {
+            const chatContainer = document.getElementById('chatContainer');
+            if (!chatContainer) return;
+
+            const actionDiv = document.createElement('div');
+            actionDiv.className = 'quick-action-container';
+            actionDiv.innerHTML = `
+                <button class="quick-action-btn" onclick="redirectToManualCreator()">
+                    📝 手动创建详细计划
+                </button>
+            `;
+
+            chatContainer.appendChild(actionDiv);
+            scrollToBottom();
+        }
+
+        // 跳转到手动创建计划页面
+        function redirectToManualCreator() {
+            const target = extractTrainingTarget(currentMessage || '');
+            const url = `manual-plan-creator.html?mode=ai&target=${target}`;
+            window.location.href = url;
+        }
+
+        // 添加计划到日历
+        async function addPlanToCalendar(planId) {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await API.addPlanToCalendar({
+                    planId: planId,
+                    date: today,
+                    time: '19:00' // 默认晚上7点
+                });
+
+                if (response.code === 200) {
+                    showToast('计划已添加到今日日程', 'success');
+                } else {
+                    showToast('添加到日历失败', 'error');
+                }
+            } catch (error) {
+                console.error('添加到日历失败:', error);
+                showToast('添加到日历失败', 'error');
+            }
+        }
+
+        // 测试API连接
+        async function testAPIConnection() {
+            try {
+                console.log('测试API连接...');
+                // 尝试调用一个简单的API来测试连接
+                const response = await API.getUserProfile();
+                console.log('API连接测试成功:', response);
+                return true;
+            } catch (error) {
+                console.error('API连接测试失败:', error);
+                showToast('网络连接异常，请检查网络或后端服务状态', 'error');
+                return false;
+            }
+        }
+
+        // 发送消息
+        let currentConversationId = null;
+        let currentMessage = ''; // 跟踪当前用户消息
+        
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const aiStatus = document.getElementById('aiStatus');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if (!messageInput) return;
+
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // 记录当前消息
+            currentMessage = message;
+
+            // 添加用户消息
+            addUserMessage(message);
+
+            // 清空输入框
+            messageInput.value = '';
+            if (sendBtn) sendBtn.disabled = true;
+
+            // 更新AI状态
+            if (aiStatus) {
+                aiStatus.textContent = 'AI 正在思考';
+                aiStatus.classList.add('thinking');
+            }
+
+            try {
+                // 检查是否是生成计划的请求
+                const isGeneratePlanRequest = checkIfGeneratePlanRequest(message);
+
+                if (isGeneratePlanRequest) {
+                    console.log('识别为生成计划请求，调用AI生成计划API...');
+                    await handleGeneratePlanRequest(message);
+                    return;
+                }
+
+                // 调试信息
+                console.log('准备调用AI对话API...');
+                console.log('消息:', message);
+                console.log('对话ID:', currentConversationId);
+                console.log('Token:', API.getToken() ? '已设置' : '未设置');
+
+                // 调用AI对话API
+                const response = await API.aiChat(message, currentConversationId, {});
+
+                console.log('AI对话API响应:', response);
+
+                if (aiStatus) {
+                    aiStatus.textContent = 'HI, 我是你的私人教练';
+                    aiStatus.classList.remove('thinking');
+                }
+
+                if (response.code === 200) {
+                    currentConversationId = response.data.conversationId;
+                    addAIMessage(response.data.reply);
+                } else {
+                    addAIMessage(response.message || '抱歉，我暂时无法回答，请稍后重试。');
+                }
+            } catch (error) {
+                if (aiStatus) {
+                    aiStatus.textContent = 'HI, 我是你的私人教练';
+                    aiStatus.classList.remove('thinking');
+                }
+                console.error('AI功能失败:', error);
+                console.error('错误详情:', {
+                    message: error.message,
+                    name: error.name,
+                    httpStatus: error.httpStatus,
+                    httpStatusText: error.httpStatusText
+                });
+
+                // 检查是否是网络错误
+                if (error.message && error.message.includes('Failed to fetch')) {
+                    addAIMessage('🔌 网络连接失败\n\n请检查以下几点：\n• 网络连接是否正常\n• 后端服务是否已启动\n• API地址是否正确\n\n如问题持续，请联系技术支持。');
+                } else if (error.httpStatus === 401) {
+                    addAIMessage('🔐 登录已过期，请重新登录。');
+            setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else if (error.httpStatus === 500) {
+                    addAIMessage('⚠️ AI服务暂时不可用，请稍后重试。');
+                } else {
+                    addAIMessage('❌ AI功能失败，请稍后重试。\n\n错误信息：' + (error.message || '未知错误'));
+                }
+            } finally {
+                if (sendBtn) sendBtn.disabled = false;
+            }
+        }
+
+        // 生成AI回复
+        function generateAIResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('计划') || lowerMessage.includes('训练')) {
+                return '我可以为你制定个性化的训练计划。你可以告诉我你的目标（如增肌、减脂、提升耐力等），我会为你生成详细的训练方案。';
+            } else if (lowerMessage.includes('饮食') || lowerMessage.includes('营养')) {
+                return '我可以为你提供营养建议和饮食方案。请告诉我你的健身目标和饮食习惯，我会为你推荐合适的食物搭配。';
+            } else if (lowerMessage.includes('器械') || lowerMessage.includes('使用')) {
+                return '我可以帮你了解各种健身器械的正确使用方法。你可以上传器械照片或告诉我器械名称，我会为你详细讲解。';
+            } else if (lowerMessage.includes('姿势') || lowerMessage.includes('动作')) {
+                return '正确的动作姿势对训练效果至关重要。我可以为你提供详细的动作指导和纠错建议。';
+            } else {
+                return '感谢你的提问！我是你的AI私人教练，我可以帮你制定健身计划、提供饮食建议、解答器械使用问题，还能进行动作纠错。请告诉我你需要哪方面的帮助？';
+            }
+        }
+        
+        // 格式化AI响应
+        function formatAIResponse(text) {
+            return text.replace(/\n/g, '<br>');
+        }
+        
+        // 转义HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 获取当前时间
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chatContainer');
+            if (chatContainer) {
+                setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, 100);
+            }
+        }
+
+        // 显示提示
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.className = 'toast';
+                }, 300);
+            }, 2000);
+        }
+
+        // 加载计划
+        async function loadPlan(planId) {
+            if (!planId) {
+                console.error('计划ID不能为空');
+                return;
+            }
+            
+            try {
+                // 从API加载计划详情
+                const response = await API.getPlanDetail(planId);
+                if (response.code === 200) {
+                    const planData = response.data;
+                    // 转换数据格式
+                    const plan = {
+                        planId: planData.planId,
+                        name: planData.name,
+                        duration: planData.duration,
+                        exercises: planData.exercises.map(ex => ({
+                            name: ex.name,
+                            sets: ex.sets,
+                            reps: ex.reps,
+                            rest: ex.rest,
+                            icon: ex.icon || '💪'
+                        }))
+                    };
+                    displayGeneratedPlan(plan);
+                } else {
+                    console.error('加载计划失败:', response.message);
+                    showToast('加载计划失败', 'error');
+                }
+            } catch (error) {
+                console.error('加载计划失败:', error);
+                showToast('加载计划失败，请稍后重试', 'error');
+            }
+        }
+        
+        // 暴露函数到全局
+        window.redirectToManualCreator = redirectToManualCreator;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>
