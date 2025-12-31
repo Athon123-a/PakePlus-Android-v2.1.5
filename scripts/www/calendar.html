@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>训练日历 - 健身助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* 顶部导航栏 */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      margin-bottom: 24px;
+      position: sticky;
+      top: 0;
+      background: rgba(10, 10, 26, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #121212;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .add-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+    }
+
+    .add-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 主容器 */
+    .calendar-container {
+      padding: 0 20px 40px;
+    }
+
+    /* 月份导航 */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .current-month {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* 日历网格 */
+    .calendar-grid {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .weekday {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      padding: 8px 4px;
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 8px;
+    }
+
+    .day {
+      min-height: 80px;
+      padding: 8px;
+      border-radius: 8px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .day:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .day.current-month {
+      color: #fff;
+    }
+
+    .day.other-month {
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    .day.today {
+      background: rgba(0, 209, 255, 0.1);
+      border: 1px solid rgba(0, 209, 255, 0.3);
+    }
+
+    .day-number {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    /* 日历事件标记 */
+    .event-marker {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 2px;
+    }
+
+    .event-marker.primary {
+      background: linear-gradient(90deg, #CCFF00, #00D1FF);
+    }
+
+    .event-marker.secondary {
+      background: #9333EA;
+    }
+
+    .event-marker.tertiary {
+      background: #22C55E;
+    }
+
+    /* 计划列表 */
+    .plans-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      border-radius: 2px;
+    }
+
+    .selected-date {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 16px;
+    }
+
+    .plans-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .plan-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .plan-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .plan-item.plan-completed {
+      opacity: 0.7;
+      border-color: rgba(82, 196, 26, 0.3);
+    }
+
+    .plan-status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .plan-status.completed {
+      background: rgba(82, 196, 26, 0.2);
+      color: #52C41A;
+      border: 1px solid rgba(82, 196, 26, 0.4);
+    }
+
+    .plan-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .plan-info {
+      flex: 1;
+    }
+
+    .plan-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 4px 0;
+    }
+
+    .plan-time {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .plan-type {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .plan-type.ai {
+      background: rgba(204, 255, 0, 0.1);
+      color: #CCFF00;
+      border: 1px solid rgba(204, 255, 0, 0.3);
+    }
+
+    .plan-type.manual {
+      background: rgba(0, 209, 255, 0.1);
+      color: #00D1FF;
+      border: 1px solid rgba(0, 209, 255, 0.3);
+    }
+
+    .plan-description {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 12px;
+    }
+
+    .plan-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      border: none;
+      color: #121212;
+    }
+
+    .action-btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(204, 255, 0, 0.3);
+    }
+
+    .action-btn.secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .action-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* 无计划提示 */
+    .no-plans {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .no-plans-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .no-plans-text {
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    /* 加载动画 */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 26, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: #00D1FF;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 拖放效果 */
+    .plan-item.dragging {
+      opacity: 0.5;
+      transform: rotate(5deg);
+    }
+    
+    .day.drag-over {
+      background: rgba(0, 209, 255, 0.2);
+      border: 1px dashed rgba(0, 209, 255, 0.5);
+    }
+    
+    /* 提示弹窗 */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      display: none;
+    }
+    
+    /* 模态框样式 */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .modal-header h2 {
+      margin: 0;
+      color: #fff;
+      font-size: 20px;
+    }
+    
+    .modal-body {
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    /* 选中日期样式 */
+    .day.selected {
+      background: rgba(0, 209, 255, 0.2);
+      border: 1px solid rgba(0, 209, 255, 0.3);
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .calendar-container {
+        padding: 0 16px 40px;
+      }
+      
+      .day {
+        min-height: 60px;
+        padding: 6px;
+      }
+      
+      .plan-actions {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .calendar-container {
+        padding: 0 12px 40px;
+      }
+      
+      .header {
+        padding: 16px 12px;
+      }
+      
+      .page-title {
+        font-size: 18px;
+      }
+      
+      .add-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      
+      .month-nav {
+        padding: 8px 12px;
+      }
+      
+      .current-month {
+        font-size: 14px;
+      }
+      
+      .day {
+        min-height: 50px;
+        padding: 4px;
+      }
+      
+      .day-number {
+        font-size: 12px;
+      }
+      
+      .event-marker {
+        height: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 加载动画 -->
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- 提示弹窗 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 顶部导航栏 -->
+  <header class="header">
+    <button class="back-btn" id="backBtn">←</button>
+    <h1 class="page-title">训练日历</h1>
+    <button class="add-btn" id="addPlanBtn">添加计划</button>
+  </header>
+
+  <div class="calendar-container">
+    <!-- 月份导航 -->
+    <div class="month-nav">
+      <button class="nav-btn" id="prevMonthBtn">←</button>
+      <span class="current-month" id="currentMonthText">2024年1月</span>
+      <button class="nav-btn" id="nextMonthBtn">→</button>
+    </div>
+
+    <!-- 日历网格 -->
+    <div class="calendar-grid">
+      <div class="weekdays">
+        <div class="weekday">日</div>
+        <div class="weekday">一</div>
+        <div class="weekday">二</div>
+        <div class="weekday">三</div>
+        <div class="weekday">四</div>
+        <div class="weekday">五</div>
+        <div class="weekday">六</div>
+      </div>
+      <div class="days" id="calendarDays">
+        <!-- 日历日期将通过JavaScript动态生成 -->
+      </div>
+    </div>
+
+    <!-- 当日计划列表 -->
+    <section class="plans-section">
+      <h2 class="section-title">今日计划</h2>
+      <div class="selected-date" id="selectedDateText">2024年1月15日</div>
+      <div class="plans-list" id="plansList">
+        <div class="plan-item">
+          <div class="plan-header">
+            <div class="plan-info">
+              <h3 class="plan-title">全身力量训练计划</h3>
+              <div class="plan-time">19:30 - 20:30</div>
+            </div>
+            <span class="plan-type ai">AI生成</span>
+          </div>
+          <div class="plan-description">包含7个动作，重点锻炼全身肌肉群，适合中级水平。</div>
+          <div class="plan-actions">
+            <button class="action-btn primary start-training-btn" data-id="1">开始训练</button>
+            <button class="action-btn secondary view-details-btn" data-id="1">查看详情</button>
+          </div>
+        </div>
+        <div class="plan-item">
+          <div class="plan-header">
+            <div class="plan-info">
+              <h3 class="plan-title">拉伸放松训练</h3>
+              <div class="plan-time">21:30 - 22:00</div>
+            </div>
+            <span class="plan-type manual">手动创建</span>
+          </div>
+          <div class="plan-description">全身主要肌群的静态拉伸，缓解训练后的肌肉紧张。</div>
+          <div class="plan-actions">
+            <button class="action-btn primary start-training-btn" data-id="2">开始训练</button>
+            <button class="action-btn secondary edit-plan-btn" data-id="2">编辑计划</button>
+            <button class="action-btn secondary delete-plan-btn" data-id="2">删除计划</button>
+          </div>
+        <div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // DOM元素
+    const backBtn = document.getElementById('backBtn');
+    const addPlanBtn = document.getElementById('addPlanBtn');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
+    const currentMonthText = document.getElementById('currentMonthText');
+    const calendarDays = document.getElementById('calendarDays');
+    const selectedDateText = document.getElementById('selectedDateText');
+    const plansList = document.getElementById('plansList');
+    const loadingEl = document.getElementById('loading');
+    const toastEl = document.getElementById('toast');
+    
+    // 弹窗元素
+    const planDetailsModal = document.createElement('div');
+    planDetailsModal.className = 'modal';
+    planDetailsModal.id = 'planDetailsModal';
+    planDetailsModal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    `;
+    document.body.appendChild(planDetailsModal);
+
+    // 当前日期
+    let currentDate = new Date();
+    let selectedDate = new Date();
+
+    // 模拟计划数据
+    const mockPlans = {
+      '2024-01-15': [
+        {
+          id: '1',
+          title: '全身力量训练计划',
+          time: '19:30 - 20:30',
+          type: 'ai',
+          description: '包含7个动作，重点锻炼全身肌肉群，适合中级水平。',
+          exercises: 7,
+          duration: 60,
+          difficulty: '中级',
+          targetMuscles: ['胸部', '背部', '腿部']
+        },
+        {
+          id: '2',
+          title: '拉伸放松训练',
+          time: '21:30 - 22:00',
+          type: 'manual',
+          description: '全身主要肌群的静态拉伸，缓解训练后的肌肉紧张。',
+          exercises: 5,
+          duration: 30,
+          difficulty: '初级',
+          targetMuscles: ['全身']
+        }
+      ],
+      '2024-01-17': [
+        {
+          id: '3',
+          title: '上肢专项训练',
+          time: '20:00 - 21:00',
+          type: 'ai',
+          description: '针对胸肩臂的专项训练，增强上肢力量和肌肉围度。',
+          exercises: 6,
+          duration: 60,
+          difficulty: '中级',
+          targetMuscles: ['胸部', '肩部', '手臂']
+        }
+      ],
+      '2024-01-20': [
+        {
+          id: '4',
+          title: 'HIIT燃脂训练',
+          time: '18:00 - 18:30',
+          type: 'manual',
+          description: '高强度间歇训练，高效燃烧脂肪，提高心肺功能。',
+          exercises: 8,
+          duration: 30,
+          difficulty: '高级',
+          targetMuscles: ['全身']
+        }
+      ],
+      '2024-01-25': [
+        {
+          id: '5',
+          title: '核心力量训练',
+          time: '19:00 - 19:45',
+          type: 'ai',
+          description: '强化腹部和腰背部肌群，提高身体稳定性。',
+          exercises: 6,
+          duration: 45,
+          difficulty: '中级',
+          targetMuscles: ['腹部', '腰背']
+        }
+      ]
+    };
+
+    // 显示加载
+    function showLoading() {
+      loadingEl.style.display = 'flex';
+    }
+
+    // 隐藏加载
+    function hideLoading() {
+      loadingEl.style.display = 'none';
+    }
+
+    // 显示提示
+    function showToast(message, type = 'info', duration = 2000) {
+      // 延迟获取toast元素，确保DOM已加载
+      let toast = toastEl;
+      if (!toast) {
+        toast = document.getElementById('toast');
+      }
+      
+      if (!toast) {
+        console.log('Toast:', message);
+        // 使用alert作为备用方案
+        if (type === 'error') {
+          alert('错误: ' + message);
+        } else if (type === 'success') {
+          alert('成功: ' + message);
+        } else {
+          alert(message);
+        }
+        return;
+      }
+      
+      toast.textContent = message;
+      toast.style.display = 'block';
+      
+      // 根据类型设置样式
+      if (type === 'error') {
+        toast.style.background = 'rgba(255, 77, 79, 0.9)';
+      } else if (type === 'success') {
+        toast.style.background = 'rgba(82, 196, 26, 0.9)';
+      } else {
+        toast.style.background = 'rgba(0, 0, 0, 0.8)';
+      }
+      
+      setTimeout(() => {
+        const toastElement = document.getElementById('toast');
+        if (toastElement) {
+          toastElement.style.display = 'none';
+        }
+      }, duration);
+    }
+
+    // 生成日历
+    function generateCalendar(year, month) {
+      calendarDays.innerHTML = '';
+      
+      // 获取月份的第一天和最后一天
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      
+      // 获取第一天是星期几（0-6）
+      const firstDayOfWeek = firstDay.getDay();
+      
+      // 生成上个月的剩余天数
+      for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+        const day = new Date(year, month, -i);
+        const dayElement = createDayElement(day, false);
+        calendarDays.appendChild(dayElement);
+      }
+      
+      // 生成当月的天数
+      for (let i = 1; i <= lastDay.getDate(); i++) {
+        const day = new Date(year, month, i);
+        const dayElement = createDayElement(day, true);
+        calendarDays.appendChild(dayElement);
+      }
+      
+      // 更新当前月份显示
+      const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+      currentMonthText.textContent = `${year}年${monthNames[month]}`;
+      
+      // 选中当天
+      selectDay(selectedDate);
+    }
+
+    // 创建日历日期元素
+    function createDayElement(date, isCurrentMonth) {
+      const dayElement = document.createElement('div');
+      dayElement.className = `day ${isCurrentMonth ? 'current-month' : 'other-month'}`;
+      
+      // 判断是否是今天
+      const today = new Date();
+      const isToday = date.getDate() === today.getDate() &&
+                     date.getMonth() === today.getMonth() &&
+                     date.getFullYear() === today.getFullYear();
+      
+      if (isToday) {
+        dayElement.classList.add('today');
+      }
+      
+      // 日期数字
+      const dayNumberElement = document.createElement('div');
+      dayNumberElement.className = 'day-number';
+      dayNumberElement.textContent = date.getDate();
+      dayElement.appendChild(dayNumberElement);
+      
+      // 存储日期信息
+      dayElement.setAttribute('data-date', formatDate(date));
+      
+      // 检查是否有计划（异步加载，先不显示标记）
+      // 标记将在loadCalendarData中更新
+      
+      // 添加点击事件
+      dayElement.addEventListener('click', () => {
+        selectedDate = date;
+        selectDay(date);
+        loadPlansForDate(date);
+      });
+      
+      return dayElement;
+    }
+
+    // 选中日期
+    function selectDay(date) {
+      // 移除之前的选中状态
+      const selectedDays = document.querySelectorAll('.day.selected');
+      selectedDays.forEach(day => day.classList.remove('selected'));
+      
+      // 添加新的选中状态
+      const dateStr = formatDate(date);
+      const dayElement = document.querySelector(`.day[data-date="${dateStr}"]`);
+      if (dayElement) {
+        dayElement.classList.add('selected');
+      }
+      
+      // 更新选中日期显示
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      selectedDateText.textContent = `${year}年${month}月${day}日`;
+    }
+
+    // 加载指定日期的计划
+    async function loadPlansForDate(date) {
+      showLoading();
+
+      try {
+        const dateStr = formatDate(date);
+        console.log('开始加载日期计划:', dateStr);
+        const response = await API.getDayPlans(dateStr);
+        console.log('获取日计划响应:', response);
+        
+        if (response.code === 200) {
+          const plans = response.data.plans.map(plan => ({
+            id: plan.calendarId,
+            planId: plan.planId,
+            title: plan.planName,
+            time: plan.time || '',
+            type: 'ai',
+            description: '',
+            exercises: plan.exercises?.length || 0,
+            duration: plan.duration,
+            difficulty: '中级',
+            targetMuscles: [],
+            status: plan.status
+          }));
+          
+          displayPlans(plans, dateStr);
+        } else {
+          displayPlans([], dateStr);
+        }
+      } catch (error) {
+        console.error('加载计划失败:', error);
+        // 使用模拟数据作为备用
+        const dateStr = formatDate(date);
+        const plans = mockPlans[dateStr] || [];
+        displayPlans(plans, dateStr);
+      } finally {
+        hideLoading();
+      }
+    }
+    
+    // 存储当前显示的计划列表（用于查看详情）
+    let currentPlans = [];
+    
+    // 显示计划列表
+    function displayPlans(plans, dateStr) {
+      plansList.innerHTML = '';
+      // 保存当前计划列表
+      currentPlans = plans;
+      
+      if (plans.length > 0) {
+        plans.forEach(plan => {
+          const planElement = createPlanElement(plan);
+          plansList.appendChild(planElement);
+        });
+      } else {
+        // 显示无计划提示
+        const noPlansElement = document.createElement('div');
+        noPlansElement.className = 'no-plans';
+        noPlansElement.innerHTML = `
+          <div class="no-plans-icon">📅</div>
+          <div class="no-plans-text">该日期暂无训练计划</div>
+          <button class="add-btn" onclick="addNewPlan()">添加计划</button>
+        `;
+        plansList.appendChild(noPlansElement);
+      }
+    }
+
+    // 创建计划元素
+    function createPlanElement(plan) {
+      const planElement = document.createElement('div');
+      planElement.className = 'plan-item';
+      
+      // 创建计划元素的拖放功能
+      planElement.draggable = true;
+      planElement.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', plan.id);
+        planElement.classList.add('dragging');
+      });
+      
+      planElement.addEventListener('dragend', () => {
+        planElement.classList.remove('dragging');
+      });
+      
+      const isCompleted = plan.status === 'completed';
+      const statusClass = isCompleted ? 'completed' : '';
+      
+      planElement.innerHTML = `
+        <div class="plan-header">
+          <div class="plan-info">
+            <h3 class="plan-title">${plan.title}</h3>
+            <div class="plan-time">${plan.time}</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="plan-type ${plan.type}">${plan.type === 'ai' ? 'AI生成' : '手动创建'}</span>
+            ${isCompleted ? '<span class="plan-status completed">✓ 已完成</span>' : ''}
+          </div>
+        </div>
+        <div class="plan-description">${plan.description}</div>
+        <div class="plan-actions">
+          ${!isCompleted ? `
+            <button class="action-btn primary start-training-btn" data-id="${plan.id}">开始训练</button>
+          ` : `
+            <button class="action-btn completed" disabled style="opacity: 0.6; cursor: not-allowed;">已完成</button>
+          `}
+          <button class="action-btn secondary view-details-btn" data-id="${plan.id}">查看详情</button>
+          ${plan.type === 'manual' ? `
+            <button class="action-btn secondary edit-plan-btn" data-id="${plan.id}">编辑计划</button>
+          ` : ''}
+          <button class="action-btn secondary delete-plan-btn" data-id="${plan.id}">删除计划</button>
+        </div>
+      `;
+      
+      // 如果已完成，添加样式类
+      if (isCompleted) {
+        planElement.classList.add('plan-completed');
+      }
+      
+      // 添加事件监听
+      const startBtn = planElement.querySelector('.start-training-btn');
+      if (startBtn) {
+        startBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // 使用planId而不是calendarId
+          startTraining(plan.planId || plan.id);
+        });
+      }
+      
+      const viewBtn = planElement.querySelector('.view-details-btn');
+      if (viewBtn) {
+        viewBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          viewPlanDetails(plan.id);
+        });
+      }
+      
+      // 编辑按钮（仅手动创建的计划）
+      if (plan.type === 'manual') {
+        const editBtn = planElement.querySelector('.edit-plan-btn');
+        if (editBtn) {
+          editBtn.addEventListener('click', () => {
+            editPlan(plan.id);
+          });
+        }
+      }
+      
+      // 删除按钮（所有类型的计划都可以删除）
+      const deleteBtn = planElement.querySelector('.delete-plan-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          // 传递plan对象，确保使用正确的calendarId
+          // plan.id 应该是 calendarId（从 loadPlansForDate 映射的）
+          console.log('点击删除按钮，plan对象:', plan);
+          if (plan && plan.id) {
+            // 使用plan对象的deletePlan方法，确保调用本地函数
+            // 先检查 window.deletePlan 是否存在且不是 API.deletePlan
+            if (window.deletePlan && window.deletePlan !== window.API.deletePlan) {
+              console.log('调用本地 deletePlan 函数');
+              await window.deletePlan(plan.id, plan);
+            } else {
+              console.log('window.deletePlan 不存在或指向 API.deletePlan，直接调用本地函数');
+              // 直接调用本地 deletePlan 函数
+              const localDeletePlan = async (planId, planObj) => {
+                console.log(`本地删除函数被调用，planId: ${planId}`, planObj);
+                // 这里复制 deletePlan 函数的逻辑
+                // 为了简化，直接调用正确的API
+                const plan = planObj;
+                if (!plan) {
+                  showToast('未找到计划', 'error');
+                  return;
+                }
+
+                if (!confirm('确定要删除这个训练计划吗？')) {
+                  return;
+                }
+
+                showLoading();
+
+                try {
+                  let calendarId = plan.id;
+                  console.log('calendarId:', calendarId, 'planId:', plan.planId);
+
+                  if (!calendarId || String(calendarId) === String(plan.planId)) {
+                    // 重新获取 calendarId
+                    const dateStr = formatDate(selectedDate);
+                    const dayPlansResponse = await window.API.getDayPlans(dateStr);
+                    if (dayPlansResponse.code === 200 && dayPlansResponse.data && dayPlansResponse.data.plans) {
+                      const foundPlan = dayPlansResponse.data.plans.find(
+                        p => p.planId === plan.planId
+                      );
+                      if (foundPlan && foundPlan.calendarId) {
+                        calendarId = foundPlan.calendarId;
+                      }
+                    }
+                  }
+
+                  if (!calendarId || String(calendarId) === String(plan.planId)) {
+                    hideLoading();
+                    showToast('无法获取日历计划ID，请刷新页面后重试', 'error');
+                    return;
+                  }
+
+                  console.log('调用 API.deleteCalendarPlan:', calendarId);
+                  const response = await window.API.deleteCalendarPlan(calendarId);
+
+                  if (response.code === 200) {
+                    hideLoading();
+                    showToast('计划已删除', 'success');
+                    loadPlansForDate(selectedDate);
+                    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                  } else {
+                    hideLoading();
+                    showToast(response.message || '删除失败，请稍后重试', 'error');
+                  }
+                } catch (error) {
+                  hideLoading();
+                  console.error('删除计划失败:', error);
+                  showToast(error.message || '删除失败，请稍后重试', 'error');
+                }
+              };
+
+              await localDeletePlan(plan.id, plan);
+            }
+          } else {
+            showToast('计划数据错误，无法删除', 'error');
+            console.error('计划对象缺少id:', plan);
+          }
+        });
+      }
+      
+      return planElement;
+    }
+    
+    // 显示计划详情弹窗
+    async function viewPlanDetails(planId) {
+      // 先从当前计划列表中查找
+      let plan = currentPlans.find(p => p.id === planId || p.planId === planId);
+      
+      // 如果找不到，尝试从API获取计划详情
+      if (!plan) {
+        try {
+          // 尝试从当前计划中获取planId
+          const currentPlan = currentPlans.find(p => p.id === planId);
+          if (currentPlan && currentPlan.planId) {
+            const response = await API.getPlanDetail(currentPlan.planId);
+            if (response.code === 200) {
+              const planData = response.data;
+              plan = {
+                id: planId,
+                planId: planData.planId,
+                title: planData.name,
+                time: '',
+                type: planData.type === 'ai_generated' ? 'ai' : 'manual',
+                description: planData.notes || '',
+                exercises: planData.exercises?.length || 0,
+                duration: planData.duration,
+                difficulty: planData.difficulty === 'beginner' ? '初级' : planData.difficulty === 'intermediate' ? '中级' : '高级',
+                targetMuscles: []
+              };
+            }
+          }
+        } catch (error) {
+          console.error('获取计划详情失败:', error);
+          showToast('获取计划详情失败', 'error');
+          return;
+        }
+      }
+      
+      if (!plan) {
+        showToast('未找到计划详情', 'error');
+        return;
+      }
+      
+      planDetailsModal.innerHTML = `
+        <div class="modal-content" style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 24px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="margin: 0; color: #fff; font-size: 20px;">${plan.title}</h2>
+            <button onclick="closePlanDetailsModal()" style="background: none; border: none; color: #fff; font-size: 24px; cursor: pointer;">×</button>
+          </div>
+          <div class="modal-body" style="color: rgba(255, 255, 255, 0.8);">
+            ${plan.time ? `<div style="margin-bottom: 16px;"><strong style="color: #fff;">时间:</strong> ${plan.time}</div>` : ''}
+            <div style="margin-bottom: 16px;">
+              <strong style="color: #fff;">类型:</strong> ${plan.type === 'ai' ? 'AI生成' : '手动创建'}
+            </div>
+            <div style="margin-bottom: 16px;">
+              <strong style="color: #fff;">难度:</strong> ${plan.difficulty}
+            </div>
+            ${plan.targetMuscles && plan.targetMuscles.length > 0 ? `<div style="margin-bottom: 16px;"><strong style="color: #fff;">目标肌群:</strong> ${plan.targetMuscles.join(', ')}</div>` : ''}
+            <div style="margin-bottom: 16px;">
+              <strong style="color: #fff;">训练时长:</strong> ${plan.duration}分钟
+            </div>
+            <div style="margin-bottom: 16px;">
+              <strong style="color: #fff;">动作数量:</strong> ${plan.exercises}个
+            </div>
+            ${plan.description ? `<div style="margin-bottom: 16px;"><strong style="color: #fff;">描述:</strong><br>${plan.description}</div>` : ''}
+          </div>
+          <div class="modal-footer" style="display: flex; gap: 8px; margin-top: 16px;">
+            <button class="action-btn primary start-training-btn" data-id="${plan.planId || plan.id}" style="flex: 1;" onclick="startTraining('${plan.planId || plan.id}')">开始训练</button>
+            <button class="action-btn secondary" style="flex: 1;" onclick="closePlanDetailsModal()">关闭</button>
+          </div>
+        </div>
+      `;
+      
+      planDetailsModal.style.display = 'flex';
+    }
+    
+    // 关闭计划详情弹窗
+    function closePlanDetailsModal() {
+      if (planDetailsModal) {
+        planDetailsModal.style.display = 'none';
+      }
+    }
+    
+    // 获取所有计划
+    function getAllPlans() {
+      let allPlans = [];
+      Object.keys(mockPlans).forEach(date => {
+        allPlans = allPlans.concat(mockPlans[date]);
+      });
+      return allPlans;
+    }
+    
+    // 拖放功能
+    function setupDragAndDrop() {
+      const dayElements = document.querySelectorAll('.day');
+      
+      dayElements.forEach(day => {
+        day.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          day.classList.add('drag-over');
+        });
+        
+        day.addEventListener('dragleave', () => {
+          day.classList.remove('drag-over');
+        });
+        
+        day.addEventListener('drop', (e) => {
+          e.preventDefault();
+          day.classList.remove('drag-over');
+          
+          const planId = e.dataTransfer.getData('text/plain');
+          const targetDate = day.getAttribute('data-date');
+          
+          if (targetDate) {
+            movePlanToDate(planId, targetDate);
+          }
+        });
+      });
+    }
+    
+    // 移动计划到指定日期
+    function movePlanToDate(planId, targetDate) {
+      // 查找计划
+      let planToMove = null;
+      let sourceDate = null;
+      
+      for (const date in mockPlans) {
+        const planIndex = mockPlans[date].findIndex(p => p.id === planId);
+        if (planIndex !== -1) {
+          planToMove = mockPlans[date][planIndex];
+          sourceDate = date;
+          break;
+        }
+      }
+      
+      if (planToMove && sourceDate) {
+        // 从原日期移除计划
+        mockPlans[sourceDate] = mockPlans[sourceDate].filter(p => p.id !== planId);
+        
+        // 如果原日期没有计划了，删除该日期键
+        if (mockPlans[sourceDate].length === 0) {
+          delete mockPlans[sourceDate];
+        }
+        
+        // 添加到目标日期
+        if (!mockPlans[targetDate]) {
+          mockPlans[targetDate] = [];
+        }
+        mockPlans[targetDate].push(planToMove);
+        
+        // 更新UI
+        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+        loadPlansForDate(selectedDate);
+        
+        showToast('计划已移动到新日期');
+      }
+    }
+
+    // 格式化日期为YYYY-MM-DD
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // 切换到上个月
+    function goToPrevMonth() {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    }
+
+    // 切换到下个月
+    function goToNextMonth() {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    }
+
+    // 返回上一页
+    function goBack() {
+      try {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          // 如果没有历史记录，返回首页
+          window.location.href = 'home.html';
+        }
+      } catch (error) {
+        console.error('返回失败:', error);
+        window.location.href = 'home.html';
+      }
+    }
+
+    // 添加新计划
+    function addNewPlan() {
+      console.log('添加新计划');
+      
+      // 传递选中的日期到创建页面
+      let url = 'manual-plan-creator.html';
+      if (selectedDate) {
+        const dateStr = formatDate(selectedDate);
+        url += '?date=' + encodeURIComponent(dateStr);
+      }
+      
+      window.location.href = url;
+    }
+
+    // 开始训练
+    function startTraining(planId) {
+      console.log(`开始训练，计划ID: ${planId}`);
+      
+      // 关闭详情弹窗（如果打开）
+      if (planDetailsModal) {
+        planDetailsModal.style.display = 'none';
+      }
+      
+      // 获取calendarId（如果有）
+      const currentPlan = currentPlans.find(p => p.planId === planId || p.id === planId);
+      const calendarId = currentPlan ? currentPlan.id : null;
+      
+      // 跳转到训练执行页面
+      let url = 'training.html?planId=' + encodeURIComponent(planId);
+      if (calendarId) {
+        url += '&calendarId=' + encodeURIComponent(calendarId);
+      }
+      window.location.href = url;
+    }
+
+
+
+    // 编辑计划
+    function editPlan(planId) {
+      console.log(`编辑计划，计划ID: ${planId}`);
+      showToast('编辑计划');
+      // 实际应用中跳转到编辑页面
+      setTimeout(() => {
+        window.location.href = `manual-plan-creator.html?planId=${planId}&mode=edit`;
+      }, 500);
+    }
+
+    // 删除计划（从日历中删除）
+    async function deletePlan(planId, planObj = null) {
+      console.log(`删除计划，传入的planId: ${planId}`, planObj);
+      
+      // 从当前计划列表中查找计划
+      let plan = planObj;
+      if (!plan) {
+        plan = currentPlans.find(p => p.id === planId || p.planId === planId);
+      }
+      
+      if (!plan) {
+        showToast('未找到计划', 'error');
+        console.error('未找到计划，planId:', planId, 'currentPlans:', currentPlans);
+        return;
+      }
+      
+      console.log('找到计划对象:', plan);
+      
+      if (!confirm('确定要删除这个训练计划吗？')) {
+        return;
+      }
+      
+      showLoading();
+      
+      try {
+        // 使用calendarId删除日历计划
+        // plan.id 应该是 calendarId（从 loadPlansForDate 中映射的）
+        let calendarId = plan.id;
+        
+        console.log('初始calendarId:', calendarId, 'plan.planId:', plan.planId);
+        console.log('calendarId类型:', typeof calendarId, 'plan.planId类型:', typeof plan.planId);
+        console.log('calendarId === plan.planId:', calendarId === plan.planId);
+        
+        // 确保 calendarId 存在且不等于 planId
+        // 如果 plan.id 等于 plan.planId，说明映射有问题，需要重新获取
+        if (!calendarId || String(calendarId) === String(plan.planId)) {
+          console.log('calendarId无效或等于planId，重新获取...');
+          // 尝试从API获取当天的计划，找到对应的calendarId
+          try {
+            const dateStr = formatDate(selectedDate);
+            const dayPlansResponse = await API.getDayPlans(dateStr);
+            console.log('获取当天计划响应:', dayPlansResponse);
+            if (dayPlansResponse.code === 200 && dayPlansResponse.data && dayPlansResponse.data.plans) {
+              const foundPlan = dayPlansResponse.data.plans.find(
+                p => p.planId === plan.planId
+              );
+              console.log('找到的计划:', foundPlan);
+              if (foundPlan && foundPlan.calendarId) {
+                calendarId = foundPlan.calendarId;
+                console.log('从API获取到calendarId:', calendarId);
+              }
+            }
+          } catch (e) {
+            console.error('获取日历计划ID失败:', e);
+          }
+        }
+        
+        // 最终验证：确保 calendarId 存在且不等于 planId
+        if (!calendarId || String(calendarId) === String(plan.planId)) {
+          hideLoading();
+          showToast('无法获取日历计划ID，请刷新页面后重试', 'error');
+          console.error('计划对象:', plan, 'calendarId:', calendarId, 'planId:', plan.planId);
+          console.error('calendarId === plan.planId:', calendarId === plan.planId);
+          return;
+        }
+        
+        console.log('准备删除日历计划，calendarId:', calendarId, 'planId:', plan.planId);
+        console.log('calendarId类型:', typeof calendarId, '值:', calendarId);
+        console.log('plan.planId类型:', typeof plan.planId, '值:', plan.planId);
+        console.log('确认调用 API.deleteCalendarPlan，不是 API.deletePlan');
+        
+        // 确保调用的是 deleteCalendarPlan 而不是 deletePlan
+        // 明确使用 window.API 避免命名冲突
+        if (!window.API || !window.API.deleteCalendarPlan) {
+          console.error('API.deleteCalendarPlan 不存在！');
+          console.error('window.API:', window.API);
+          hideLoading();
+          showToast('API方法不存在，请刷新页面', 'error');
+          return;
+        }
+        
+        // 验证 calendarId 不是 planId
+        if (String(calendarId) === String(plan.planId)) {
+          console.error('错误：calendarId 等于 planId，不应该调用 API.deletePlan');
+          hideLoading();
+          showToast('数据错误，无法删除', 'error');
+          return;
+        }
+        
+        console.log('调用 window.API.deleteCalendarPlan，参数:', calendarId);
+        console.log('API.deleteCalendarPlan 函数:', window.API.deleteCalendarPlan);
+        
+        // 明确调用 deleteCalendarPlan，确保不是 deletePlan
+        const deleteCalendarPlanFunc = window.API.deleteCalendarPlan;
+        if (!deleteCalendarPlanFunc) {
+          console.error('deleteCalendarPlan 函数不存在！');
+          hideLoading();
+          showToast('删除功能不可用，请刷新页面', 'error');
+          return;
+        }
+        
+        const response = await deleteCalendarPlanFunc(calendarId);
+        console.log('删除响应:', response);
+        
+        if (response.code === 200) {
+          hideLoading();
+          showToast('计划已删除', 'success');
+          // 重新加载当天计划
+          loadPlansForDate(selectedDate);
+          // 重新生成日历以更新标记
+          generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+        } else {
+          hideLoading();
+          showToast(response.message || '删除失败，请稍后重试', 'error');
+        }
+      } catch (error) {
+        hideLoading();
+        console.error('删除计划失败:', error);
+        // 检查是否是网络错误
+        if (error.message && error.message.includes('Failed to fetch')) {
+          showToast('网络错误，请检查网络连接', 'error');
+        } else if (error.httpStatus === 404) {
+          showToast('计划不存在或已被删除', 'error');
+        } else {
+          showToast(error.message || '删除失败，请稍后重试', 'error');
+        }
+      }
+    }
+
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', () => {
+      // 返回按钮事件
+      backBtn.addEventListener('click', goBack);
+      
+      // 添加计划按钮事件
+      addPlanBtn.addEventListener('click', addNewPlan);
+      
+      // 月份导航按钮事件
+      prevMonthBtn.addEventListener('click', goToPrevMonth);
+      nextMonthBtn.addEventListener('click', goToNextMonth);
+      
+      // 初始化日历
+      generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+      
+      // 加载今天的计划
+      loadPlansForDate(selectedDate);
+      
+      // 设置拖放功能
+      setTimeout(setupDragAndDrop, 100);
+    });
+    
+    // 监听页面加载完成
+    window.addEventListener('load', () => {
+      console.log('训练日历页面加载完成');
+      
+      // 检查是否需要刷新（从训练页面返回）
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('refresh') === 'true') {
+        // 刷新当前日期的计划列表
+        if (selectedDate) {
+          setTimeout(() => {
+            loadPlansForDate(selectedDate);
+          }, 300);
+        }
+        // 刷新日历标记
+        if (currentDate) {
+          setTimeout(() => {
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+          }, 500);
+        }
+        // 清除URL参数
+        window.history.replaceState({}, '', 'calendar.html');
+      }
+    });
+    
+    // 全局函数，供HTML中直接调用
+    window.goBack = goBack;
+    window.addNewPlan = addNewPlan;
+    window.startTraining = startTraining;
+    window.editPlan = editPlan;
+    window.deletePlan = deletePlan;
+    window.viewPlanDetails = viewPlanDetails;
+    window.closePlanDetailsModal = closePlanDetailsModal;
+    
+    // 点击弹窗外区域关闭弹窗
+    planDetailsModal.addEventListener('click', (e) => {
+      if (e.target === planDetailsModal) {
+        closePlanDetailsModal();
+      }
+    });
+    
+    // 键盘事件监听
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closePlanDetailsModal();
+      }
+    });
+    
+    // 修复计划列表中的HTML错误
+    document.addEventListener('DOMContentLoaded', function() {
+      // 修复计划列表中未闭合的div标签
+      const planItems = document.querySelectorAll('.plan-item');
+      planItems.forEach(item => {
+        // 确保每个计划项都有正确的结构
+        const actions = item.querySelector('.plan-actions');
+        if (actions && actions.innerHTML.includes('</div>')) {
+          // 修复可能的HTML结构错误
+          let html = actions.innerHTML;
+          // 移除多余的</div>标签
+          html = html.replace(/<\/div>/g, '');
+          actions.innerHTML = html;
+        }
+      });
+    });
+
+    // 导航栏高亮当前页面
+    const currentPage = window.location.pathname.split('/').pop() || 'calendar.html';
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      item.classList.remove('active');
+      const href = item.getAttribute('href');
+      if (href && (currentPage === href || (currentPage === '' && href === 'calendar.html'))) {
+        item.classList.add('active');
+      }
+    });
+</script>
+
+<!-- 底部导航栏 -->
+<nav class="bottom-nav">
+  <a href="home.html" class="nav-item">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">首页</div>
+  </a>
+  <a href="calendar.html" class="nav-item active">
+    <div class="nav-icon">📅</div>
+    <div class="nav-label">日历</div>
+  </a>
+  <a href="community.html" class="nav-item">
+    <div class="nav-icon">👥</div>
+    <div class="nav-label">社区</div>
+  </a>
+      <a href="profile.html" class="nav-item">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">我的</div>
+      </a>
+</nav>
+
+<style>
+  /* 底部导航栏样式 */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 26, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    min-width: 0;
+  }
+
+  .nav-item:hover {
+    color: #00D1FF;
+  }
+
+  .nav-item.active {
+    color: #CCFF00;
+  }
+
+  .nav-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .nav-item.active .nav-icon {
+    transform: scale(1.1);
+  }
+
+  .nav-label {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .nav-item.coming-soon {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .nav-item.coming-soon:hover {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  body {
+    padding-bottom: 80px;
+  }
+
+  @media (max-width: 480px) {
+    .nav-label {
+      display: none;
+    }
+
+    .nav-icon {
+      font-size: 22px;
+      margin-bottom: 0;
+    }
+  }
+  </style>
+
+  <!-- 引入API工具 -->
+  <script src="js/api.js"></script>
+  <script>
+    // 日历API对接
+    (function() {
+      // 更新日历显示
+      async function updateCalendarDisplay(calendarData) {
+        // 更新日历标记
+        if (calendarData && calendarData.days) {
+          calendarData.days.forEach(dayData => {
+            const dayElement = document.querySelector(`.day[data-date="${dayData.date}"]`);
+            if (dayElement && dayData.hasPlan) {
+              // 清除旧标记
+              const oldMarkers = dayElement.querySelectorAll('.event-marker');
+              oldMarkers.forEach(m => m.remove());
+              
+              // 添加新标记
+              const planCount = Math.min(dayData.planCount, 3);
+              for (let i = 0; i < planCount; i++) {
+                const marker = document.createElement('div');
+                marker.className = `event-marker ${i === 0 ? 'primary' : i === 1 ? 'secondary' : 'tertiary'}`;
+                dayElement.appendChild(marker);
+              }
+            }
+          });
+        }
+      }
+      
+      // 加载日历数据
+      async function loadCalendarData(year, month) {
+        try {
+          const response = await API.getCalendar(year, month);
+          if (response.code === 200) {
+            await updateCalendarDisplay(response.data);
+          }
+        } catch (error) {
+          console.error('加载日历数据失败:', error);
+        }
+      }
+      
+      // 在日历生成后加载数据
+      const originalGenerateCalendar = window.generateCalendar;
+      if (originalGenerateCalendar) {
+        window.generateCalendar = function(year, month) {
+          originalGenerateCalendar(year, month);
+          // 生成日历后加载数据
+          setTimeout(() => {
+            loadCalendarData(year, month);
+          }, 100);
+        };
+      }
+      
+      // 删除计划函数已经在上面定义，这里不需要重写
+    })();
+  </script>
+</body>
+</html>
