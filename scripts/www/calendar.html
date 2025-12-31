@@ -643,72 +643,7 @@
     let currentDate = new Date();
     let selectedDate = new Date();
 
-    // 模拟计划数据
-    const mockPlans = {
-      '2024-01-15': [
-        {
-          id: '1',
-          title: '全身力量训练计划',
-          time: '19:30 - 20:30',
-          type: 'ai',
-          description: '包含7个动作，重点锻炼全身肌肉群，适合中级水平。',
-          exercises: 7,
-          duration: 60,
-          difficulty: '中级',
-          targetMuscles: ['胸部', '背部', '腿部']
-        },
-        {
-          id: '2',
-          title: '拉伸放松训练',
-          time: '21:30 - 22:00',
-          type: 'manual',
-          description: '全身主要肌群的静态拉伸，缓解训练后的肌肉紧张。',
-          exercises: 5,
-          duration: 30,
-          difficulty: '初级',
-          targetMuscles: ['全身']
-        }
-      ],
-      '2024-01-17': [
-        {
-          id: '3',
-          title: '上肢专项训练',
-          time: '20:00 - 21:00',
-          type: 'ai',
-          description: '针对胸肩臂的专项训练，增强上肢力量和肌肉围度。',
-          exercises: 6,
-          duration: 60,
-          difficulty: '中级',
-          targetMuscles: ['胸部', '肩部', '手臂']
-        }
-      ],
-      '2024-01-20': [
-        {
-          id: '4',
-          title: 'HIIT燃脂训练',
-          time: '18:00 - 18:30',
-          type: 'manual',
-          description: '高强度间歇训练，高效燃烧脂肪，提高心肺功能。',
-          exercises: 8,
-          duration: 30,
-          difficulty: '高级',
-          targetMuscles: ['全身']
-        }
-      ],
-      '2024-01-25': [
-        {
-          id: '5',
-          title: '核心力量训练',
-          time: '19:00 - 19:45',
-          type: 'ai',
-          description: '强化腹部和腰背部肌群，提高身体稳定性。',
-          exercises: 6,
-          duration: 45,
-          difficulty: '中级',
-          targetMuscles: ['腹部', '腰背']
-        }
-      ]
-    };
+    // 计划数据统一通过API管理，不再使用静态模拟数据
 
     // 显示加载
     function showLoading() {
@@ -882,10 +817,8 @@
         }
       } catch (error) {
         console.error('加载计划失败:', error);
-        // 使用模拟数据作为备用
-        const dateStr = formatDate(date);
-        const plans = mockPlans[dateStr] || [];
-        displayPlans(plans, dateStr);
+        // 显示空计划列表
+        displayPlans([], dateStr);
       } finally {
         hideLoading();
       }
@@ -1165,14 +1098,7 @@
       }
     }
     
-    // 获取所有计划
-    function getAllPlans() {
-      let allPlans = [];
-      Object.keys(mockPlans).forEach(date => {
-        allPlans = allPlans.concat(mockPlans[date]);
-      });
-      return allPlans;
-    }
+    // 获取所有计划（已通过API统一管理，不再需要此函数）
     
     // 拖放功能
     function setupDragAndDrop() {
@@ -1202,41 +1128,36 @@
       });
     }
     
-    // 移动计划到指定日期
-    function movePlanToDate(planId, targetDate) {
-      // 查找计划
-      let planToMove = null;
-      let sourceDate = null;
-      
-      for (const date in mockPlans) {
-        const planIndex = mockPlans[date].findIndex(p => p.id === planId);
-        if (planIndex !== -1) {
-          planToMove = mockPlans[date][planIndex];
-          sourceDate = date;
-          break;
+    // 移动计划到指定日期（使用API）
+    async function movePlanToDate(planId, targetDate) {
+      try {
+        showLoading();
+
+        // 查找当前计划信息
+        const currentPlan = currentPlans.find(p => p.id === planId);
+        if (!currentPlan) {
+          showToast('未找到要移动的计划', 'error');
+          return;
         }
-      }
-      
-      if (planToMove && sourceDate) {
-        // 从原日期移除计划
-        mockPlans[sourceDate] = mockPlans[sourceDate].filter(p => p.id !== planId);
-        
-        // 如果原日期没有计划了，删除该日期键
-        if (mockPlans[sourceDate].length === 0) {
-          delete mockPlans[sourceDate];
+
+        console.log('移动计划:', currentPlan.planId, '到日期:', targetDate);
+
+        // 调用API添加计划到新日期
+        const response = await API.addPlanToCalendar(currentPlan.planId, targetDate, null, 'none');
+
+        if (response.code === 200) {
+          // 成功后刷新日历和计划列表
+          generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+          loadPlansForDate(selectedDate);
+          showToast('计划已移动到新日期', 'success');
+        } else {
+          showToast(response.message || '移动计划失败', 'error');
         }
-        
-        // 添加到目标日期
-        if (!mockPlans[targetDate]) {
-          mockPlans[targetDate] = [];
-        }
-        mockPlans[targetDate].push(planToMove);
-        
-        // 更新UI
-        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
-        loadPlansForDate(selectedDate);
-        
-        showToast('计划已移动到新日期');
+      } catch (error) {
+        console.error('移动计划失败:', error);
+        showToast('移动计划失败，请稍后重试', 'error');
+      } finally {
+        hideLoading();
       }
     }
 
@@ -1494,6 +1415,41 @@
         }
         // 清除URL参数
         window.history.replaceState({}, '', 'calendar.html');
+
+      // 检查日期参数，如果有则自动选择对应日期
+      const dateParam = urlParams.get('date');
+      if (dateParam) {
+        try {
+          const targetDate = new Date(dateParam);
+          if (!isNaN(targetDate.getTime())) {
+            // 设置选中日期
+            selectedDate = targetDate;
+            currentDate = new Date(targetDate);
+
+            console.log('从URL参数设置日期:', targetDate.toISOString().split('T')[0]);
+
+            // 重新生成日历
+            setTimeout(() => {
+              generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+              // 加载对应日期的计划
+              loadPlansForDate(selectedDate);
+            }, 200);
+          }
+        } catch (error) {
+          console.error('解析日期参数失败:', error);
+        }
+      }
+
+      // 检查是否需要自动打开计划详情
+      const showDetails = urlParams.get('showDetails');
+      const planId = urlParams.get('planId');
+      if (showDetails === 'true' && planId) {
+        console.log('检测到详情参数，准备自动打开计划详情:', planId);
+        // 等待页面完全加载后打开详情（给日期加载留出时间）
+        setTimeout(() => {
+          showPlanDetails(planId);
+        }, dateParam ? 1500 : 1000);
+      }
       }
     });
     
@@ -1559,14 +1515,18 @@
     <div class="nav-icon">📅</div>
     <div class="nav-label">日历</div>
   </a>
-  <a href="community.html" class="nav-item">
-    <div class="nav-icon">👥</div>
-    <div class="nav-label">社区</div>
+  <a href="plans.html" class="nav-item">
+    <div class="nav-icon">📋</div>
+    <div class="nav-label">计划</div>
   </a>
-      <a href="profile.html" class="nav-item">
-        <div class="nav-icon">👤</div>
-        <div class="nav-label">我的</div>
-      </a>
+  <a href="statistics.html" class="nav-item">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">统计</div>
+  </a>
+  <a href="profile.html" class="nav-item">
+    <div class="nav-icon">👤</div>
+    <div class="nav-label">我的</div>
+  </a>
 </nav>
 
 <style>
