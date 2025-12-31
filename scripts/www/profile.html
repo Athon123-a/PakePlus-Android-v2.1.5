@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的 - 健身助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 80px;
+    }
+
+    /* 顶部导航栏 */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      margin-bottom: 24px;
+      position: sticky;
+      top: 0;
+      background: rgba(10, 10, 26, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+    }
+
+    .settings-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .settings-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    /* 主容器 */
+    .profile-container {
+      padding: 0 20px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 用户信息卡片 */
+    .user-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .user-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #CCFF00, #00D1FF);
+    }
+
+    .user-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .user-avatar-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #121212;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .user-avatar-large:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .user-level {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(0, 209, 255, 0.2);
+      border: 1px solid rgba(0, 209, 255, 0.3);
+      border-radius: 12px;
+      font-size: 12px;
+      color: #00D1FF;
+      margin-bottom: 8px;
+    }
+
+    .user-bio {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.5;
+    }
+
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-item {
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .stat-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #CCFF00;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* 功能菜单 */
+    .menu-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      padding-left: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: linear-gradient(135deg, #CCFF00, #00D1FF);
+      border-radius: 2px;
+    }
+
+    .menu-list {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .menu-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .menu-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(0, 209, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .menu-text {
+      flex: 1;
+    }
+
+    .menu-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .menu-desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .menu-badge {
+      padding: 2px 8px;
+      background: rgba(255, 77, 79, 0.2);
+      border: 1px solid rgba(255, 77, 79, 0.3);
+      border-radius: 10px;
+      font-size: 11px;
+      color: #FF4D4F;
+      margin-left: 8px;
+    }
+
+    .menu-arrow {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 18px;
+      margin-left: 12px;
+    }
+
+    /* 训练成就 */
+    .achievements {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .achievement-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .achievement-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(0, 209, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .achievement-item.unlocked {
+      border-color: rgba(204, 255, 0, 0.5);
+      background: rgba(204, 255, 0, 0.1);
+    }
+
+    .achievement-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+
+    .achievement-item.unlocked .achievement-icon {
+      opacity: 1;
+    }
+
+    .achievement-name {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 10, 26, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      min-width: 0;
+    }
+
+    .nav-item:hover {
+      color: #00D1FF;
+    }
+
+    .nav-item.active {
+      color: #CCFF00;
+    }
+
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item.active .nav-icon {
+      transform: scale(1.1);
+    }
+
+    .nav-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .profile-container {
+        padding: 0 16px 40px;
+      }
+
+      .user-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .achievements {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .profile-container {
+        padding: 0 12px 40px;
+      }
+
+      .header {
+        padding: 16px 12px;
+      }
+
+      .page-title {
+        font-size: 18px;
+      }
+
+      .user-avatar-large {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+
+      .user-name {
+        font-size: 20px;
+      }
+
+      .user-stats {
+        gap: 8px;
+      }
+
+      .stat-value {
+        font-size: 18px;
+      }
+
+      .achievements {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .nav-label {
+        display: none;
+      }
+
+      .nav-icon {
+        font-size: 22px;
+        margin-bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <header class="header">
+    <button class="back-btn" id="backBtn">←</button>
+    <h1 class="page-title">我的</h1>
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
+  </header>
+
+  <div class="profile-container">
+    <!-- 用户信息卡片 -->
+    <div class="user-card">
+      <div class="user-header">
+        <div class="user-avatar-large" id="userAvatar">JD</div>
+        <div class="user-info">
+          <div class="user-name">健身达人</div>
+          <div class="user-level">中级会员</div>
+          <div class="user-bio">坚持健身，遇见更好的自己 💪</div>
+        </div>
+      </div>
+      <div class="user-stats">
+        <div class="stat-item" onclick="window.location.href='calendar.html'">
+          <div class="stat-value" id="totalPlans">12</div>
+          <div class="stat-label">训练计划</div>
+        </div>
+        <div class="stat-item" onclick="window.location.href='community.html'">
+          <div class="stat-value" id="totalPosts">8</div>
+          <div class="stat-label">我的帖子</div>
+        </div>
+        <div class="stat-item" onclick="window.location.href='statistics.html'">
+          <div class="stat-value" id="totalDays">45</div>
+          <div class="stat-label">坚持天数</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 我的内容 -->
+    <div class="menu-section">
+      <h2 class="section-title">我的内容</h2>
+      <div class="menu-list">
+        <div class="menu-item" onclick="window.location.href='calendar.html'">
+          <div class="menu-item-left">
+            <div class="menu-icon">📅</div>
+            <div class="menu-text">
+              <div class="menu-title">我的训练计划</div>
+              <div class="menu-desc">查看和管理训练计划</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="window.location.href='community.html'">
+          <div class="menu-item-left">
+            <div class="menu-icon">💬</div>
+            <div class="menu-text">
+              <div class="menu-title">我的帖子</div>
+              <div class="menu-desc">查看我发布的讨论和建议</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showMyOrders()">
+          <div class="menu-item-left">
+            <div class="menu-icon">🛒</div>
+            <div class="menu-text">
+              <div class="menu-title">我的订单</div>
+              <div class="menu-desc">查看购买记录和订单状态</div>
+            </div>
+          </div>
+          <span class="menu-badge" id="orderBadge" style="display: none;">2</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="window.location.href='statistics.html'">
+          <div class="menu-item-left">
+            <div class="menu-icon">📊</div>
+            <div class="menu-text">
+              <div class="menu-title">数据统计</div>
+              <div class="menu-desc">查看训练数据和进度分析</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 训练成就 -->
+    <div class="menu-section">
+      <h2 class="section-title">训练成就</h2>
+      <div class="achievements">
+        <div class="achievement-item unlocked">
+          <div class="achievement-icon">🏃</div>
+          <div class="achievement-name">初出茅庐</div>
+        </div>
+        <div class="achievement-item unlocked">
+          <div class="achievement-icon">💪</div>
+          <div class="achievement-name">坚持一周</div>
+        </div>
+        <div class="achievement-item unlocked">
+          <div class="achievement-icon">🔥</div>
+          <div class="achievement-name">连续30天</div>
+        </div>
+        <div class="achievement-item">
+          <div class="achievement-icon">⭐</div>
+          <div class="achievement-name">连续100天</div>
+        </div>
+        <div class="achievement-item unlocked">
+          <div class="achievement-icon">🎯</div>
+          <div class="achievement-name">完成50次</div>
+        </div>
+        <div class="achievement-item">
+          <div class="achievement-icon">👑</div>
+          <div class="achievement-name">健身达人</div>
+        </div>
+        <div class="achievement-item">
+          <div class="achievement-icon">🏆</div>
+          <div class="achievement-name">完美身材</div>
+        </div>
+        <div class="achievement-item">
+          <div class="achievement-icon">🌟</div>
+          <div class="achievement-name">社区之星</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能设置 -->
+    <div class="menu-section">
+      <h2 class="section-title">功能设置</h2>
+      <div class="menu-list">
+        <div class="menu-item" onclick="showEditProfile()">
+          <div class="menu-item-left">
+            <div class="menu-icon">✏️</div>
+            <div class="menu-text">
+              <div class="menu-title">编辑资料</div>
+              <div class="menu-desc">修改个人信息和头像</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showNotifications()">
+          <div class="menu-item-left">
+            <div class="menu-icon">🔔</div>
+            <div class="menu-text">
+              <div class="menu-title">消息通知</div>
+              <div class="menu-desc">管理通知设置</div>
+            </div>
+          </div>
+          <span class="menu-badge" id="notificationBadge">3</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showPrivacy()">
+          <div class="menu-item-left">
+            <div class="menu-icon">🔒</div>
+            <div class="menu-text">
+              <div class="menu-title">隐私设置</div>
+              <div class="menu-desc">管理隐私和权限</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showAbout()">
+          <div class="menu-item-left">
+            <div class="menu-icon">ℹ️</div>
+            <div class="menu-text">
+              <div class="menu-title">关于我们</div>
+              <div class="menu-desc">版本信息和帮助</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 其他 -->
+    <div class="menu-section">
+      <h2 class="section-title">其他</h2>
+      <div class="menu-list">
+        <div class="menu-item" onclick="showFeedback()">
+          <div class="menu-item-left">
+            <div class="menu-icon">💡</div>
+            <div class="menu-text">
+              <div class="menu-title">意见反馈</div>
+              <div class="menu-desc">帮助我们改进产品</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showShare()">
+          <div class="menu-item-left">
+            <div class="menu-icon">📤</div>
+            <div class="menu-text">
+              <div class="menu-title">分享应用</div>
+              <div class="menu-desc">推荐给朋友</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showLogout()" style="color: rgba(255, 77, 79, 0.8);">
+          <div class="menu-item-left">
+            <div class="menu-icon" style="background: rgba(255, 77, 79, 0.2);">🚪</div>
+            <div class="menu-text">
+              <div class="menu-title">退出登录</div>
+              <div class="menu-desc">安全退出当前账号</div>
+            </div>
+          </div>
+          <span class="menu-arrow">›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a href="home.html" class="nav-item">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">首页</div>
+    </a>
+    <a href="calendar.html" class="nav-item">
+      <div class="nav-icon">📅</div>
+      <div class="nav-label">日历</div>
+    </a>
+    <a href="community.html" class="nav-item">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">社区</div>
+    </a>
+    <a href="profile.html" class="nav-item active">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">我的</div>
+    </a>
+    </nav>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+    <script>
+    // DOM元素
+    const backBtn = document.getElementById('backBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const userAvatar = document.getElementById('userAvatar');
+
+    // 返回上一页
+    function goBack() {
+      try {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = 'home.html';
+        }
+      } catch (error) {
+        console.error('返回失败:', error);
+        window.location.href = 'home.html';
+      }
+    }
+
+    // 显示我的订单
+    function showMyOrders() {
+      alert('我的订单功能开发中...\n\n您可以在社区商城中查看购买记录。');
+      // 可以跳转到社区商城的订单页面
+      // window.location.href = 'community.html?tab=shop&view=orders';
+    }
+
+    // 显示编辑资料
+    function showEditProfile() {
+      alert('编辑资料功能开发中...\n\n可以修改：\n- 昵称\n- 头像\n- 个人简介\n- 训练目标');
+    }
+
+    // 显示消息通知
+    function showNotifications() {
+      alert('消息通知功能开发中...\n\n可以设置：\n- 训练提醒\n- 社区互动通知\n- 系统消息');
+    }
+
+    // 显示隐私设置
+    function showPrivacy() {
+      alert('隐私设置功能开发中...\n\n可以管理：\n- 个人信息可见性\n- 数据同步设置\n- 账号安全');
+    }
+
+    // 显示关于我们
+    function showAbout() {
+      alert('健身助手 v1.0.0\n\n一款专业的健身训练管理应用\n\n功能包括：\n- AI训练计划生成\n- 训练日历管理\n- 社区互动\n- 数据统计\n\n© 2024 健身助手');
+    }
+
+    // 显示意见反馈
+    function showFeedback() {
+      alert('意见反馈功能开发中...\n\n您可以在社区的建议区提交功能建议。');
+      // 可以跳转到社区建议页面
+      // window.location.href = 'community.html?tab=suggestion';
+    }
+
+    // 显示分享
+    function showShare() {
+      if (navigator.share) {
+        navigator.share({
+          title: '健身助手',
+          text: '推荐一款好用的健身训练管理应用！',
+          url: window.location.href
+        }).catch(err => {
+          console.log('分享失败:', err);
+          alert('分享功能需要浏览器支持');
+        });
+      } else {
+        // 复制链接到剪贴板
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+          alert('链接已复制到剪贴板！\n\n' + url);
+        }).catch(() => {
+          alert('分享链接：\n' + url);
+        });
+      }
+    }
+
+    // 显示退出登录
+    async function showLogout() {
+      if (confirm('确定要退出登录吗？')) {
+        try {
+          await API.logout();
+        } catch (error) {
+          console.error('登出失败:', error);
+        } finally {
+          // 跳转到登录页
+          window.location.href = 'index.html';
+        }
+      }
+    }
+
+    // 加载用户数据
+    async function loadUserData() {
+      try {
+        const response = await API.getUserProfile();
+        if (response.code === 200) {
+          const userInfo = response.data;
+
+          // 更新页面显示
+          const userNameEl = document.querySelector('.user-name');
+          const userLevelEl = document.querySelector('.user-level');
+          const userBioEl = document.querySelector('.user-bio');
+          
+          if (userNameEl) userNameEl.textContent = userInfo.username || '健身达人';
+          if (userAvatar) userAvatar.textContent = (userInfo.username || 'U').charAt(0).toUpperCase();
+          if (userLevelEl) userLevelEl.textContent = userInfo.level || '中级会员';
+          if (userBioEl) userBioEl.textContent = userInfo.bio || '坚持健身，遇见更好的自己 💪';
+          
+          if (userInfo.stats) {
+            const totalPlansEl = document.getElementById('totalPlans');
+            const totalPostsEl = document.getElementById('totalPosts');
+            const totalDaysEl = document.getElementById('totalDays');
+            
+            if (totalPlansEl) totalPlansEl.textContent = userInfo.stats.totalPlans || 0;
+            if (totalPostsEl) totalPostsEl.textContent = userInfo.stats.totalPosts || 0;
+            if (totalDaysEl) totalDaysEl.textContent = userInfo.stats.totalDays || 0;
+          }
+        } else {
+          throw new Error(response.message || '获取用户信息失败');
+        }
+      } catch (error) {
+        console.error('加载用户数据失败:', error);
+        // 使用默认数据
+        const userNameEl = document.querySelector('.user-name');
+        if (userNameEl) userNameEl.textContent = '健身达人';
+        if (userAvatar) userAvatar.textContent = 'U';
+      }
+    }
+
+    // 检查订单通知
+    function checkOrderNotifications() {
+      // 模拟检查未读订单
+      const unreadOrders = 2;
+      if (unreadOrders > 0) {
+        const badge = document.getElementById('orderBadge');
+        badge.textContent = unreadOrders;
+        badge.style.display = 'inline-block';
+      }
+    }
+
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', () => {
+      // 检查用户登录状态
+      const token = API.getToken();
+      if (!token) {
+        console.log('用户未登录，跳转到登录页');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      console.log('用户已登录，Token:', token ? '已设置' : '未设置');
+      // 返回按钮
+      backBtn.addEventListener('click', goBack);
+
+      // 设置按钮
+      settingsBtn.addEventListener('click', () => {
+        alert('设置功能开发中...');
+      });
+
+      // 用户头像点击
+      userAvatar.addEventListener('click', showEditProfile);
+
+      // 加载用户数据
+      loadUserData();
+
+      // 检查通知
+      checkOrderNotifications();
+
+      // 导航栏高亮当前页面
+      const currentPage = window.location.pathname.split('/').pop() || 'profile.html';
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        const href = item.getAttribute('href');
+        if (href && currentPage === href) {
+          item.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
