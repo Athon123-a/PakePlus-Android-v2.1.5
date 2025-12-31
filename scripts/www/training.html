@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>训练执行 - 健身助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            margin-bottom: 24px;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+            flex: 1;
+            text-align: center;
+        }
+
+        .finish-btn {
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #121212;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .finish-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+        }
+
+        .finish-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 主容器 */
+        .training-container {
+            padding: 0 20px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 训练信息卡片 */
+        .plan-info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .plan-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .plan-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 计时器卡片 */
+        .timer-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+            color: #CCFF00;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .timer-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timer-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .timer-btn.active {
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+            border-color: transparent;
+        }
+
+        /* 进度条 */
+        .progress-section {
+            margin-bottom: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #CCFF00, #00D1FF);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* 训练项目列表 */
+        .exercises-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .exercise-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-item.completed {
+            opacity: 0.6;
+            border-color: rgba(204, 255, 0, 0.3);
+        }
+
+        .exercise-item.active {
+            border-color: #CCFF00;
+            box-shadow: 0 0 20px rgba(204, 255, 0, 0.2);
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .exercise-info {
+            flex: 1;
+        }
+
+        .exercise-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .exercise-details {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .exercise-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.pending {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .status-badge.active {
+            background: rgba(204, 255, 0, 0.2);
+            color: #CCFF00;
+        }
+
+        .status-badge.completed {
+            background: rgba(82, 196, 26, 0.2);
+            color: #52C41A;
+        }
+
+        /* 组数列表 */
+        .sets-list {
+            margin-top: 12px;
+        }
+
+        .set-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .set-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .set-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .set-item.completed .set-number {
+            background: rgba(82, 196, 26, 0.3);
+            color: #52C41A;
+        }
+
+        .set-item.active .set-number {
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+        }
+
+        .set-details {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .set-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .set-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .set-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .set-btn.complete {
+            background: rgba(82, 196, 26, 0.2);
+            border-color: rgba(82, 196, 26, 0.4);
+            color: #52C41A;
+        }
+
+        /* 纠错按钮 */
+        .correction-btn {
+            background: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            border-radius: 6px;
+            padding: 4px 8px;
+            color: #00D1FF;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 8px;
+        }
+
+        .correction-btn:hover {
+            background: rgba(0, 209, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        /* 纠错表单 */
+        .correction-form {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+        }
+
+        .form-label .required {
+            color: #ff4d4f;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #00D1FF;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 209, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 纠错结果 */
+        .correction-result {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .correction-result h4 {
+            margin: 0 0 12px 0;
+            color: #00D1FF;
+            font-size: 16px;
+        }
+
+        .correction-content {
+            color: #fff;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* 动画 */
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* 休息计时器 */
+        .rest-timer {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .rest-timer.active {
+            display: block;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .rest-timer-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .rest-timer-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FF4D4F;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-subtext {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 底部导航栏 */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            color: #CCFF00;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-text {
+            font-size: 12px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .plan-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .timer-display {
+                font-size: 36px;
+            }
+
+            .exercise-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1 class="page-title">训练执行</h1>
+        <button class="finish-btn" id="finishBtn" onclick="finishTraining()" disabled>完成训练</button>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="training-container">
+        <!-- 训练计划信息 -->
+        <div class="plan-info-card" id="planInfoCard">
+            <div class="plan-title" id="planTitle">加载中...</div>
+            <div class="plan-meta">
+                <div class="meta-item">
+                    <span>⏱️</span>
+                    <span id="planDuration">-</span>
+                </div>
+                <div class="meta-item">
+                    <span>💪</span>
+                    <span id="planDifficulty">-</span>
+                </div>
+                <div class="meta-item">
+                    <span>🔥</span>
+                    <span id="planExercises">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 计时器卡片 -->
+        <div class="timer-card">
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn" id="startTimerBtn" onclick="startTimer()">开始</button>
+                <button class="timer-btn" id="pauseTimerBtn" onclick="pauseTimer()" style="display: none;">暂停</button>
+                <button class="timer-btn" onclick="resetTimer()">重置</button>
+            </div>
+        </div>
+
+        <!-- 训练进度 -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">训练进度</span>
+                <span class="progress-text" id="progressText">0 / 0</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- 训练项目列表 -->
+        <div class="exercises-section">
+            <h2 class="section-title">
+                <span>💪</span>
+                <span>训练项目</span>
+            </h2>
+            <div id="exercisesList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⏳</div>
+                    <div class="empty-state-text">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="bottom-navbar">
+        <a href="home.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">首页</span>
+        </a>
+        <a href="calendar.html" class="nav-item">
+            <span class="nav-icon">📅</span>
+            <span class="nav-text">日历</span>
+        </a>
+        <a href="community.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text">社区</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">我的</span>
+        </a>
+    </nav>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+    <script>
+        // 全局变量
+        let currentPlan = null;
+        let exercises = [];
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let restTimerInterval = null;
+        let restTimerSeconds = 0;
+        let currentExerciseIndex = -1;
+        let currentSetIndex = -1;
+        let trainingStartTime = null;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 检查用户登录状态
+            const token = API.getToken();
+            if (!token) {
+                console.log('用户未登录，跳转到登录页');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            console.log('用户已登录，Token:', token ? '已设置' : '未设置');
+
+            // 从URL获取planId
+            const urlParams = new URLSearchParams(window.location.search);
+            const planId = urlParams.get('planId');
+            const calendarId = urlParams.get('calendarId');
+
+            if (!planId) {
+                showError('未找到训练计划ID');
+                return;
+            }
+
+            // 加载计划详情
+            await loadPlan(planId);
+        });
+
+        // 加载计划详情
+        async function loadPlan(planId) {
+            try {
+                const response = await API.getPlanDetail(planId);
+                if (response.code === 200) {
+                    currentPlan = response.data;
+                    exercises = currentPlan.exercises || [];
+                    
+                    // 初始化训练数据
+                    exercises.forEach((exercise, exIndex) => {
+                        exercise.completed = false;
+                        exercise.sets = parseInt(exercise.sets) || 3;
+                        exercise.rest = parseInt(exercise.rest) || 60;
+                        exercise.setsData = [];
+                        for (let i = 0; i < exercise.sets; i++) {
+                            exercise.setsData.push({
+                                setNumber: i + 1,
+                                completed: false,
+                                reps: exercise.reps || '10-12',
+                                rest: exercise.rest || 60
+                            });
+                        }
+                    });
+
+                    // 更新页面显示
+                    updatePlanInfo();
+                    renderExercises();
+                    updateProgress();
+                } else {
+                    showError('加载计划失败：' + response.message);
+                }
+            } catch (error) {
+                console.error('加载计划失败:', error);
+                showError('加载计划失败，请稍后重试');
+            }
+        }
+
+        // 更新计划信息
+        function updatePlanInfo() {
+            if (!currentPlan) return;
+
+            document.getElementById('planTitle').textContent = currentPlan.name || '训练计划';
+            document.getElementById('planDuration').textContent = (currentPlan.duration || 0) + '分钟';
+            document.getElementById('planDifficulty').textContent = 
+                currentPlan.difficulty === 'beginner' ? '初级' :
+                currentPlan.difficulty === 'intermediate' ? '中级' : '高级';
+            document.getElementById('planExercises').textContent = exercises.length + '个动作';
+        }
+
+        // 渲染训练项目列表
+        function renderExercises() {
+            const exercisesList = document.getElementById('exercisesList');
+            if (!exercisesList) return;
+
+            if (exercises.length === 0) {
+                exercisesList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">暂无训练项目</div>
+                    </div>
+                `;
+                return;
+            }
+
+            exercisesList.innerHTML = exercises.map((exercise, exIndex) => {
+                const completedSets = exercise.setsData.filter(s => s.completed).length;
+                const isCompleted = exercise.completed;
+                const isActive = exIndex === currentExerciseIndex;
+                const hasActiveRestTimer = restTimerInterval && exIndex === currentExerciseIndex;
+
+                return `
+                    <div class="exercise-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}" data-index="${exIndex}">
+                        <div class="exercise-header">
+                            <div class="exercise-info">
+                                <div class="exercise-name">
+                                    ${exercise.icon || '💪'} ${exercise.name || '动作' + (exIndex + 1)}
+                                </div>
+                                <div class="exercise-details">
+                                    <span>${exercise.sets}组</span>
+                                    <span>${exercise.reps}次</span>
+                                    ${exercise.rest ? `<span>休息${exercise.rest}秒</span>` : ''}
+                                    <span>已完成 ${completedSets}/${exercise.sets}</span>
+                                </div>
+                            </div>
+                            <div class="exercise-status">
+                                <span class="status-badge ${isCompleted ? 'completed' : isActive ? 'active' : 'pending'}">
+                                    ${isCompleted ? '已完成' : isActive ? '进行中' : '待训练'}
+                                </span>
+                                ${isActive ? `
+                                    <button class="correction-btn" onclick="openCorrectionModal(${exIndex})" title="遇到问题？AI帮你纠错">
+                                        🤖 纠错
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="sets-list">
+                            ${exercise.setsData.map((set, setIndex) => {
+                                const isSetActive = exIndex === currentExerciseIndex && setIndex === currentSetIndex;
+                                const isNextSet = !set.completed && 
+                                    (setIndex === 0 || exercise.setsData[setIndex - 1].completed);
+                                return `
+                                    <div class="set-item ${set.completed ? 'completed' : ''} ${isSetActive ? 'active' : ''}">
+                                        <div class="set-info">
+                                            <div class="set-number">${set.setNumber}</div>
+                                            <div class="set-details">
+                                                ${set.reps}次
+                                                ${set.completed ? '<span style="color: #52C41A; margin-left: 8px;">✓</span>' : ''}
+                                            </div>
+                                        </div>
+                                        <div class="set-actions">
+                                            ${!set.completed ? `
+                                                <button class="set-btn ${isNextSet ? 'complete' : ''}" onclick="completeSet(${exIndex}, ${setIndex})">
+                                                    ${isNextSet ? '完成' : '跳过'}
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        ${hasActiveRestTimer ? `
+                            <div class="rest-timer active" id="restTimer-${exIndex}">
+                                <div class="rest-timer-text">组间休息</div>
+                                <div class="rest-timer-display" id="restTimerDisplay-${exIndex}">${restTimerSeconds}</div>
+                                <button class="set-btn" onclick="skipRestTimer()" style="margin-top: 8px; width: 100%;">跳过休息</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 完成一组
+        async function completeSet(exerciseIndex, setIndex) {
+            if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return;
+            if (setIndex < 0 || setIndex >= exercises[exerciseIndex].setsData.length) return;
+
+            const exercise = exercises[exerciseIndex];
+            const set = exercise.setsData[setIndex];
+
+            // 如果已经完成，不重复处理
+            if (set.completed) return;
+
+            // 标记为完成
+            set.completed = true;
+            currentSetIndex = setIndex;
+            currentExerciseIndex = exerciseIndex;
+
+            // 检查是否所有组都完成
+            const allSetsCompleted = exercise.setsData.every(s => s.completed);
+            if (allSetsCompleted) {
+                exercise.completed = true;
+            }
+
+            // 更新显示
+            renderExercises();
+            updateProgress();
+
+            // 如果有休息时间且不是最后一组，启动休息计时器
+            if (exercise.rest && setIndex < exercise.setsData.length - 1) {
+                startRestTimer(exerciseIndex, exercise.rest);
+            } else if (allSetsCompleted && exerciseIndex < exercises.length - 1) {
+                // 如果当前动作完成，自动开始下一个动作
+                setTimeout(() => {
+                    currentExerciseIndex = exerciseIndex + 1;
+                    currentSetIndex = -1;
+                    renderExercises();
+                    // 滚动到当前动作
+                    scrollToCurrentExercise();
+                }, 500);
+            }
+
+            // 检查是否所有训练都完成
+            checkTrainingComplete();
+        }
+
+        // 滚动到当前动作
+        function scrollToCurrentExercise() {
+            if (currentExerciseIndex >= 0) {
+                const exerciseElement = document.querySelector(`.exercise-item[data-index="${currentExerciseIndex}"]`);
+                if (exerciseElement) {
+                    exerciseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        // 启动休息计时器
+        function startRestTimer(exerciseIndex, restSeconds) {
+            // 清除之前的计时器
+            if (restTimerInterval) {
+                clearInterval(restTimerInterval);
+            }
+
+            restTimerSeconds = restSeconds;
+            currentExerciseIndex = exerciseIndex;
+
+            // 更新显示
+            renderExercises();
+
+            restTimerInterval = setInterval(() => {
+                restTimerSeconds--;
+                const restTimerDisplay = document.getElementById(`restTimerDisplay-${exerciseIndex}`);
+                if (restTimerDisplay) {
+                    restTimerDisplay.textContent = restTimerSeconds;
+                }
+
+                if (restTimerSeconds <= 0) {
+                    clearInterval(restTimerInterval);
+                    restTimerInterval = null;
+                    restTimerSeconds = 0;
+                    // 播放提示音
+                    playNotificationSound();
+                    // 更新显示
+                    renderExercises();
+                }
+            }, 1000);
+        }
+
+        // 跳过休息计时器
+        function skipRestTimer() {
+            if (restTimerInterval) {
+                clearInterval(restTimerInterval);
+                restTimerInterval = null;
+                restTimerSeconds = 0;
+                renderExercises();
+            }
+        }
+
+        // 开始计时器
+        function startTimer() {
+            if (timerInterval) return;
+
+            trainingStartTime = new Date();
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+
+            document.getElementById('startTimerBtn').style.display = 'none';
+            document.getElementById('pauseTimerBtn').style.display = 'inline-block';
+        }
+
+        // 暂停计时器
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            document.getElementById('startTimerBtn').style.display = 'inline-block';
+            document.getElementById('pauseTimerBtn').style.display = 'none';
+        }
+
+        // 重置计时器
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 0;
+            updateTimerDisplay();
+        }
+
+        // 更新计时器显示
+        function updateTimerDisplay() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            if (timerDisplay) {
+                timerDisplay.textContent = formatTime(timerSeconds);
+            }
+        }
+
+        // 格式化时间
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // 更新进度
+        function updateProgress() {
+            const totalExercises = exercises.length;
+            const completedExercises = exercises.filter(e => e.completed).length;
+            const progress = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
+
+            document.getElementById('progressText').textContent = `${completedExercises} / ${totalExercises}`;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // 如果所有训练完成，启用完成按钮
+            const finishBtn = document.getElementById('finishBtn');
+            if (finishBtn) {
+                finishBtn.disabled = completedExercises < totalExercises;
+            }
+        }
+
+        // 检查训练是否完成
+        function checkTrainingComplete() {
+            const allCompleted = exercises.every(e => e.completed);
+            if (allCompleted) {
+                const finishBtn = document.getElementById('finishBtn');
+                if (finishBtn) {
+                    finishBtn.disabled = false;
+                }
+                // 自动暂停计时器
+                pauseTimer();
+            }
+        }
+
+        // 完成训练
+        async function finishTraining() {
+            if (!confirm('确定要完成训练吗？')) {
+                return;
+            }
+
+            pauseTimer();
+
+            // 计算实际训练时长
+            const actualDuration = timerSeconds;
+            const actualDurationMinutes = Math.floor(actualDuration / 60) || 1;
+
+            // 获取calendarId（如果有）
+            const urlParams = new URLSearchParams(window.location.search);
+            const calendarId = urlParams.get('calendarId');
+
+            // 准备训练记录数据
+            const sessionData = {
+                planId: currentPlan.planId,
+                calendarId: calendarId || null,
+                date: new Date().toISOString().split('T')[0],
+                duration: actualDurationMinutes,
+                exercises: exercises.map(ex => ({
+                    exerciseId: ex.exerciseId || '',
+                    name: ex.name,
+                    sets: ex.sets,
+                    reps: ex.reps,
+                    completed: ex.completed
+                })),
+                notes: `训练完成，用时 ${formatTime(actualDuration)}`
+            };
+
+            try {
+                // 保存训练记录
+                const response = await API.saveTrainingSession(sessionData);
+                if (response.code === 200) {
+                    // 如果有calendarId，更新日历计划状态为已完成
+                    if (calendarId) {
+                        try {
+                            await API.updateCalendarPlan(calendarId, {
+                                status: 'completed',
+                                actualDuration: actualDurationMinutes,
+                                notes: sessionData.notes
+                            });
+                        } catch (calendarError) {
+                            console.error('更新日历状态失败:', calendarError);
+                            // 即使更新日历失败，也继续
+                        }
+                    }
+
+                    alert('训练记录已保存！');
+                    // 跳转回日历页面，并刷新数据
+                    window.location.href = 'calendar.html?refresh=true';
+                } else {
+                    alert('保存训练记录失败：' + response.message);
+                }
+            } catch (error) {
+                console.error('保存训练记录失败:', error);
+                alert('保存训练记录失败，请稍后重试');
+            }
+        }
+
+        // 播放提示音
+        function playNotificationSound() {
+            // 使用Web Audio API播放提示音
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (error) {
+                console.error('播放提示音失败:', error);
+            }
+        }
+
+        // 显示错误
+        function showError(message) {
+            const exercisesList = document.getElementById('exercisesList');
+            if (exercisesList) {
+                exercisesList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <div class="empty-state-text">${message}</div>
+                        <div class="empty-state-subtext">请返回重试</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 返回上一页
+        function goBack() {
+            if (timerInterval) {
+                if (!confirm('训练正在进行中，确定要离开吗？')) {
+                    return;
+                }
+            }
+            window.history.back();
+        }
+
+        // 页面卸载前提示
+        window.addEventListener('beforeunload', function(e) {
+            if (timerInterval) {
+                e.preventDefault();
+                e.returnValue = '训练正在进行中，确定要离开吗？';
+            }
+        });
+
+        // 暴露函数到全局作用域，供HTML onclick调用
+        window.completeSet = completeSet;
+        window.skipRestTimer = skipRestTimer;
+        window.startTimer = startTimer;
+        window.pauseTimer = pauseTimer;
+        window.resetTimer = resetTimer;
+        window.finishTraining = finishTraining;
+        window.goBack = goBack;
+
+        // AI纠错功能
+        let currentCorrectionExerciseIndex = -1;
+
+        // 打开纠错弹窗
+        function openCorrectionModal(exerciseIndex) {
+            currentCorrectionExerciseIndex = exerciseIndex;
+            const exercise = exercises[exerciseIndex];
+
+            if (!exercise) {
+                showToast('未找到动作信息', 'error');
+                return;
+            }
+
+            // 填充动作名称
+            document.getElementById('correctionExerciseName').value = exercise.name || '';
+
+            // 清空其他字段
+            document.getElementById('correctionDescription').value = '';
+            document.getElementById('correctionResult').style.display = 'none';
+            document.getElementById('submitCorrectionBtn').disabled = false;
+            document.getElementById('correctionBtnText').textContent = '获取建议';
+
+            // 显示弹窗
+            const modal = document.getElementById('correctionModal');
+            modal.classList.add('show');
+        }
+
+        // 关闭纠错弹窗
+        function closeCorrectionModal() {
+            const modal = document.getElementById('correctionModal');
+            modal.classList.remove('show');
+            currentCorrectionExerciseIndex = -1;
+        }
+
+        // 提交纠错请求
+        async function submitCorrection() {
+            const description = document.getElementById('correctionDescription').value.trim();
+            const exerciseName = document.getElementById('correctionExerciseName').value.trim();
+
+            if (!description) {
+                showToast('请描述遇到的问题', 'error');
+                return;
+            }
+
+            if (!exerciseName) {
+                showToast('动作名称不能为空', 'error');
+                return;
+            }
+
+            // 显示加载状态
+            const submitBtn = document.getElementById('submitCorrectionBtn');
+            const btnText = document.getElementById('correctionBtnText');
+            submitBtn.disabled = true;
+            btnText.textContent = 'AI分析中...';
+
+            try {
+                // 构建计划上下文
+                const planContext = {
+                    planId: planId,
+                    difficulty: 'intermediate', // 可以根据实际情况调整
+                    currentSets: exercises[currentCorrectionExerciseIndex]?.sets || 0,
+                    currentReps: exercises[currentCorrectionExerciseIndex]?.reps || ''
+                };
+
+                // 调用AI纠错API
+                const response = await API.aiTrainingCorrection(exerciseName, description, planContext);
+
+                if (response.code === 200) {
+                    // 显示纠错结果
+                    document.getElementById('correctionContent').textContent = response.data.correction;
+                    document.getElementById('correctionResult').style.display = 'block';
+                    btnText.textContent = '重新分析';
+                } else {
+                    showToast(response.message || '分析失败，请稍后重试', 'error');
+                    btnText.textContent = '获取建议';
+                }
+            } catch (error) {
+                console.error('AI纠错失败:', error);
+                showToast(error.message || '网络错误，请稍后重试', 'error');
+                btnText.textContent = '获取建议';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        // 暴露纠错函数到全局
+        window.openCorrectionModal = openCorrectionModal;
+        window.closeCorrectionModal = closeCorrectionModal;
+        window.submitCorrection = submitCorrection;
+    </script>
+
+    <!-- AI纠错弹窗 -->
+    <div id="correctionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🤖 AI训练纠错</h3>
+                <button class="modal-close" onclick="closeCorrectionModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="correction-form">
+                    <div class="form-group">
+                        <label class="form-label">动作名称</label>
+                        <input type="text" id="correctionExerciseName" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">遇到的问题 <span class="required">*</span></label>
+                        <textarea id="correctionDescription" class="form-textarea" placeholder="请描述你在训练中遇到的问题，比如动作不标准、感觉疼痛、呼吸困难等..." rows="4"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-secondary" onclick="closeCorrectionModal()">取消</button>
+                        <button class="btn-primary" onclick="submitCorrection()" id="submitCorrectionBtn">
+                            <span id="correctionBtnText">获取建议</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="correction-result" id="correctionResult" style="display: none;">
+                    <h4>AI建议：</h4>
+                    <div id="correctionContent" class="correction-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
