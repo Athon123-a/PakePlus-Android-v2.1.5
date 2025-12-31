@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            /* 健身主题：使用充满活力的绿色渐变 */
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 50%, #74b9ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 添加装饰性元素 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.3)"/></svg>') repeat;
+            opacity: 0.3;
+            z-index: 0;
+            animation: float 30s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5%, 5%) rotate(1deg); }
+            50% { transform: translate(0, 10%) rotate(0deg); }
+            75% { transform: translate(-5%, 5%) rotate(-1deg); }
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);  /* 提高透明度 */
+            backdrop-filter: blur(12px);  /* 增强模糊效果 */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3); /* 添加白色边框增强玻璃质感 */
+            padding: 2.5rem 2rem;
+            border-radius: 20px;  /* 增大圆角 */
+            width: 90%;
+            max-width: 450px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1; /* 确保内容在装饰元素之上 */
+            overflow: hidden;
+        }
+
+        /* 健身主题装饰条 */
+        .register-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #00b894, #00cec9, #0984e3, #6c5ce7);
+            animation: gradientShift 5s ease infinite;
+            background-size: 400% 100%;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .register-container:hover {
+            transform: translateY(-5px);  /* 悬停时轻微上浮 */
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+        }
+
+        .register-title {
+            color: #2c405a;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .register-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 4px;
+            background: #00b894;
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        /* 健身励志标语 */
+        .motivational-slogan {
+            text-align: center;
+            color: #00b894;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #00b894;
+            box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .input-field.error {
+            border-color: #e74c3c;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 2.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #00b894;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(to right, #00b894, #00cec9); /* 健身主题：绿色渐变 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+            margin-top: 1rem;
+        }
+
+        .register-btn:hover {
+            background: linear-gradient(to right, #00cec9, #00b894);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .register-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(0, 184, 148, 0.4);
+        }
+
+        .register-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .extra-links {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .link {
+            color: #00b894;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+            color: #00cec9;
+            transform: translateX(2px);
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background-color: rgba(0, 184, 148, 0.1);
+            color: #00b894;
+            border: 1px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .message.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        /* 添加响应式设计 */
+        @media (max-width: 768px) {
+            .register-container {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+            
+            .register-title {
+                font-size: 1.5rem;
+            }
+            
+            .motivational-slogan {
+                font-size: 1rem;
+            }
+            
+            .input-field,
+            .register-btn {
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .register-container {
+                padding: 1.5rem 1.25rem;
+                border-radius: 16px;
+            }
+            
+            .register-title {
+                font-size: 1.35rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .motivational-slogan {
+                font-size: 0.95rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .input-group {
+                margin-bottom: 1.25rem;
+            }
+            
+            .input-label {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h1 class="register-title">创建新账号</h1>
+        <p class="motivational-slogan">开始你的健身体验之旅！</p>
+        
+        <!-- 消息提示区域 -->
+        <div id="message-container"></div>
+        
+        <form id="register-form" onsubmit="return handleRegister(event)">
+            <div class="input-group">
+                <label for="username" class="input-label">用户名</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    class="input-field" 
+                    placeholder="请设置用户名" 
+                    required
+                    minlength="3"
+                    maxlength="20"
+                >
+                <span id="username-error" class="error-message"></span>
+            </div>
+
+            <div class="input-group">
+                <label for="email" class="input-label">邮箱</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    class="input-field" 
+                    placeholder="请输入邮箱地址" 
+                    required
+                >
+                <span id="email-error" class="error-message"></span>
+            </div>
+
+            <div class="input-group">
+                <label for="password" class="input-label">密码</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="input-field" 
+                    placeholder="请设置密码（至少6位）" 
+                    required
+                    minlength="6"
+                >
+                <span class="password-toggle" onclick="togglePasswordVisibility('password')">👁️</span>
+                <span id="password-error" class="error-message"></span>
+            </div>
+
+            <div class="input-group">
+                <label for="confirm-password" class="input-label">确认密码</label>
+                <input 
+                    type="password" 
+                    id="confirm-password" 
+                    class="input-field" 
+                    placeholder="请再次输入密码" 
+                    required
+                >
+                <span class="password-toggle" onclick="togglePasswordVisibility('confirm-password')">👁️</span>
+                <span id="confirm-password-error" class="error-message"></span>
+            </div>
+
+            <button type="submit" class="register-btn">立即注册</button>
+        </form>
+
+        <div class="extra-links">
+            <span>已有账号？</span> <a href="index.html" class="link">立即登录</a>
+        </div>
+    </div>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+    <script>
+        // 显示消息函数
+        function showMessage(text, type = 'success') {
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.innerHTML = `
+                <div class="message ${type}">
+                    ${text}
+                </div>
+            `;
+            
+            // 3秒后自动隐藏消息
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        // 切换密码可见性
+        function togglePasswordVisibility(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleIcons = document.querySelectorAll('.password-toggle');
+            
+            // 找到对应输入框的切换图标
+            let targetIcon = null;
+            toggleIcons.forEach(icon => {
+                const iconRect = icon.getBoundingClientRect();
+                const inputRect = passwordInput.getBoundingClientRect();
+                
+                // 简单判断：在输入框右侧附近的图标
+                if (iconRect.left > inputRect.left && iconRect.left < inputRect.right) {
+                    targetIcon = icon;
+                }
+            });
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                if (targetIcon) targetIcon.textContent = '👁️‍🗨️';
+            } else {
+                passwordInput.type = 'password';
+                if (targetIcon) targetIcon.textContent = '👁️';
+            }
+        }
+
+        // 输入验证函数
+        function validateInput(inputElement, errorElementId, validationFn) {
+            const errorElement = document.getElementById(errorElementId);
+            
+            if (!validationFn(inputElement.value)) {
+                inputElement.classList.add('error');
+                errorElement.textContent = validationFn.errorMessage || '输入格式不正确';
+                return false;
+            } else {
+                inputElement.classList.remove('error');
+                errorElement.textContent = '';
+                return true;
+            }
+        }
+
+        // 用户名验证
+        function validateUsername(username) {
+            const isValid = username.trim().length >= 3 && username.trim().length <= 20;
+            validateUsername.errorMessage = isValid ? '' : '用户名长度应在3-20个字符之间';
+            return isValid;
+        }
+
+        // 邮箱验证
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const isValid = emailRegex.test(email);
+            validateEmail.errorMessage = isValid ? '' : '请输入有效的邮箱地址';
+            return isValid;
+        }
+
+        // 密码验证
+        function validatePassword(password) {
+            const isValid = password.length >= 6;
+            validatePassword.errorMessage = isValid ? '' : '密码长度至少为6个字符';
+            return isValid;
+        }
+
+        // 确认密码验证
+        function validateConfirmPassword(confirmPassword) {
+            const password = document.getElementById('password').value;
+            const isValid = confirmPassword === password;
+            validateConfirmPassword.errorMessage = isValid ? '' : '两次输入的密码不一致';
+            return isValid;
+        }
+
+        // 注册处理函数
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username');
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm-password');
+            
+            // 添加空值检查
+            if (!username || !email || !password || !confirmPassword) {
+                showMessage('表单元素未找到，请刷新页面重试', 'error');
+                return false;
+            }
+
+            // 验证所有输入
+            const isUsernameValid = validateInput(username, 'username-error', validateUsername);
+            const isEmailValid = validateInput(email, 'email-error', validateEmail);
+            const isPasswordValid = validateInput(password, 'password-error', validatePassword);
+            const isConfirmPasswordValid = validateInput(confirmPassword, 'confirm-password-error', validateConfirmPassword);
+            
+            if (!isUsernameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
+                return false;
+            }
+
+            const usernameValue = username.value.trim();
+            const emailValue = email.value.trim();
+            const passwordValue = password.value;
+            
+            // 调用注册API
+            const registerBtn = document.querySelector('.register-btn');
+            if (registerBtn) {
+                registerBtn.disabled = true;
+                registerBtn.textContent = '注册中...';
+            }
+
+            API.register(usernameValue, passwordValue, emailValue, null)
+                .then(response => {
+                    if (response.code === 200) {
+                        // 显示成功消息
+                        showMessage('注册成功！正在跳转到登录页面...', 'success');
+                        
+                        // 延迟跳转到登录页面
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    } else {
+                        showMessage(response.message || '注册失败，请稍后重试', 'error');
+                        if (registerBtn) {
+                            registerBtn.disabled = false;
+                            registerBtn.textContent = '立即注册';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('注册失败:', error);
+                    showMessage(error.message || '注册失败，请稍后重试', 'error');
+                    if (registerBtn) {
+                        registerBtn.disabled = false;
+                        registerBtn.textContent = '立即注册';
+                    }
+                });
+            
+            return false;
+        }
+
+        // 页面加载时的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加输入事件监听器以实时验证
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
+            
+            if (usernameInput) {
+                usernameInput.addEventListener('input', function() {
+                    validateInput(usernameInput, 'username-error', validateUsername);
+                });
+            }
+            
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    validateInput(emailInput, 'email-error', validateEmail);
+                });
+            }
+            
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    validateInput(passwordInput, 'password-error', validatePassword);
+                    // 当密码改变时，重新验证确认密码
+                    if (confirmPasswordInput) {
+                        validateInput(confirmPasswordInput, 'confirm-password-error', validateConfirmPassword);
+                    }
+                });
+            }
+            
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('input', function() {
+                    validateInput(confirmPasswordInput, 'confirm-password-error', validateConfirmPassword);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
