@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>训练计划 - 健身助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .add-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+        }
+
+        /* 数据分析 */
+        .analytics-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .analytics-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .analytics-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(0, 209, 255, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .analytics-info {
+            flex: 1;
+        }
+
+        .analytics-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .analytics-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+        }
+
+        /* 搜索和筛选 */
+        .filters-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-input:focus {
+            border-color: #00D1FF;
+            box-shadow: 0 0 0 3px rgba(0, 209, 255, 0.1);
+        }
+
+        .filter-btn {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-btn.active {
+            background: #00D1FF;
+            border-color: #00D1FF;
+            color: #121212;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* 计划列表 */
+        .plans-section {
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plans-count {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .plan-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #CCFF00, #00D1FF);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .plan-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 209, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 209, 255, 0.15);
+        }
+
+        .plan-card:hover::before {
+            opacity: 1;
+        }
+
+        .plan-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .plan-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(0, 209, 255, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .plan-info {
+            flex: 1;
+        }
+
+        .plan-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .plan-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .plan-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .plan-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .plan-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .plan-date {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .plan-date::before {
+            content: '📅';
+            font-size: 16px;
+        }
+
+        .plan-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .plan-status.active {
+            background: rgba(0, 209, 255, 0.2);
+            color: #00D1FF;
+        }
+
+        .plan-status.archived {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .plan-status.completed {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+
+        .plan-status.in-progress {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+        }
+
+        .plan-status.not-started {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .completion-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 0;
+            padding: 8px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .completion-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .completion-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #CCFF00, #00D1FF);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 6px rgba(204, 255, 0, 0.3);
+        }
+
+        .completion-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 24px;
+        }
+
+        .empty-action {
+            padding: 12px 24px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .empty-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #00D1FF;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            min-width: 0;
+        }
+
+        .nav-item:hover {
+            color: #00D1FF;
+        }
+
+        .nav-item.active {
+            color: #CCFF00;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .filter-tags {
+                justify-content: center;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .analytics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .analytics-card {
+                padding: 12px;
+            }
+
+            .analytics-value {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1 class="header-title">训练计划</h1>
+            <button class="add-btn" onclick="createNewPlan()">
+                <span>+</span>
+                新建计划
+            </button>
+        </header>
+
+        <!-- 数据分析 -->
+        <section class="analytics-section">
+            <h2 class="section-title">📊 数据分析</h2>
+            <div class="analytics-grid" id="analyticsGrid">
+                <div class="analytics-card">
+                    <div class="analytics-icon">📋</div>
+                    <div class="analytics-info">
+                        <div class="analytics-value" id="totalPlans">0</div>
+                        <div class="analytics-label">总计划数</div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon">✅</div>
+                    <div class="analytics-info">
+                        <div class="analytics-value" id="completedPlans">0</div>
+                        <div class="analytics-label">已完成</div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon">⏳</div>
+                    <div class="analytics-info">
+                        <div class="analytics-value" id="inProgressPlans">0</div>
+                        <div class="analytics-label">进行中</div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon">🎯</div>
+                    <div class="analytics-info">
+                        <div class="analytics-value" id="completionRate">0%</div>
+                        <div class="analytics-label">完成率</div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon">⏱️</div>
+                    <div class="analytics-info">
+                        <div class="analytics-value" id="totalDuration">0</div>
+                        <div class="analytics-label">总时长(分钟)</div>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon">📈</div>
+                    <div class="analytics-info">
+                        <div class="analytics-value" id="avgDifficulty">-</div>
+                        <div class="analytics-label">平均难度</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 搜索和筛选 -->
+        <section class="filters-section">
+            <div class="search-bar">
+                <input
+                    type="text"
+                    class="search-input"
+                    placeholder="搜索计划名称..."
+                    id="searchInput"
+                    oninput="filterPlans()"
+                />
+                <button class="filter-btn" onclick="toggleFilters()">筛选</button>
+                <button class="filter-btn" onclick="clearFilters()">清除</button>
+            </div>
+            <div class="filter-tags" id="filterTags">
+                <button class="filter-btn" data-filter="all" class="active">全部</button>
+                <button class="filter-btn" data-filter="beginner">初级</button>
+                <button class="filter-btn" data-filter="intermediate">中级</button>
+                <button class="filter-btn" data-filter="advanced">高级</button>
+            </div>
+        </section>
+
+        <!-- 加载状态 -->
+        <div id="loadingState" class="loading">
+            <div class="loading-spinner"></div>
+            <span>加载计划列表中...</span>
+        </div>
+
+        <!-- 计划列表 -->
+        <section class="plans-section">
+            <div class="section-header">
+                <h2 class="section-title">📋 我的计划</h2>
+                <span class="plans-count" id="plansCount">共 0 个计划</span>
+            </div>
+            <div class="plans-grid" id="plansGrid">
+                <!-- 计划卡片将通过JavaScript动态生成 -->
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">📋</div>
+                    <div class="empty-title">暂无训练计划</div>
+                    <div class="empty-desc">创建您的第一个训练计划，开始健身之旅</div>
+                    <button class="empty-action" onclick="createNewPlan()">
+                        <span>+</span>
+                        创建计划
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">首页</div>
+        </a>
+        <a href="calendar.html" class="nav-item">
+            <div class="nav-icon">📅</div>
+            <div class="nav-label">日历</div>
+        </a>
+        <a href="plans.html" class="nav-item active">
+            <div class="nav-icon">📋</div>
+            <div class="nav-label">计划</div>
+        </a>
+        <a href="statistics.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">统计</div>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">我的</div>
+        </a>
+    </nav>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+
+    <script>
+        let allPlans = [];
+        let filteredPlans = [];
+        let currentFilter = 'all';
+        let searchTerm = '';
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFilters();
+            loadPlans();
+        });
+
+        // 初始化筛选器
+        function initializeFilters() {
+            const filterBtns = document.querySelectorAll('.filter-btn[data-filter]');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    setActiveFilter(filter);
+                    filterPlans();
+                });
+            });
+        }
+
+        // 设置激活的筛选器
+        function setActiveFilter(filter) {
+            currentFilter = filter;
+            const filterBtns = document.querySelectorAll('.filter-btn[data-filter]');
+            filterBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-filter') === filter) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // Token验证辅助函数
+        function isTokenValid() {
+            const token = localStorage.getItem('token');
+            if (!token) return false;
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const now = Math.floor(Date.now() / 1000);
+                return payload.exp > now;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // 安全的API调用
+        async function safeApiCall(url, options = {}) {
+            if (!isTokenValid()) {
+                console.warn('Token无效或过期，跳转登录页面');
+                window.location.href = 'index.html';
+                return null;
+            }
+
+            return await fetch(`${API_BASE_URL}${url}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+        }
+
+        // 清除Token
+        function clearToken() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user_info');
+        }
+
+        // 加载计划列表
+        async function loadPlans() {
+            showLoading(true);
+
+            try {
+                console.log('🔄 加载训练计划列表...');
+
+                // 使用安全的API调用方式
+                const response = await safeApiCall('/plans?page=1&pageSize=100', {
+                    method: 'GET'
+                });
+
+                if (!response) {
+                    // Token无效，已跳转登录，清除加载状态
+                    showLoading(false);
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    // 🆕 处理后端提供的新数据分析字段
+                    allPlans = (data.data.plans || []).map(plan => ({
+                        ...plan,
+                        // 确保这些字段存在
+                        totalSessions: plan.totalSessions || 0,
+                        completedSessions: plan.completedSessions || 0,
+                        completionPercent: plan.completionPercent || 0,
+                        status: plan.status || 'not-started'
+                    }));
+
+                    console.log('✅ 加载到计划数量:', allPlans.length);
+                    console.log('📊 第一个计划的结构:', allPlans[0]);
+
+                    // 同时加载本地保存的计划（如果API不可用时的后备）
+                    try {
+                        const localPlans = getLocalPlans();
+                        if (localPlans.length > 0) {
+                            // 合并本地计划（避免重复）
+                            const existingIds = new Set(allPlans.map(p => p.planId || p.id));
+                            const newLocalPlans = localPlans.filter(p => !existingIds.has(p.planId || p.id));
+                            allPlans = [...allPlans, ...newLocalPlans];
+                        }
+                    } catch (error) {
+                        console.warn('加载本地计划失败:', error);
+                    }
+
+                    filterPlans();
+                    updateAnalytics(allPlans);
+                    showLoading(false);
+                } else if (data.code === 401 || data.code === 403) {
+                    // Token过期或权限不足，跳转登录
+                    console.warn('认证失败，跳转登录页面 (code:', data.code, ')');
+                    clearToken();
+                    showLoading(false);
+                    window.location.href = 'index.html';
+                    return;
+                } else {
+                    throw new Error(data.message || '加载计划失败');
+                }
+            } catch (error) {
+                console.error('❌ 加载计划失败:', error);
+
+                // 尝试加载本地保存的计划作为后备
+                try {
+                    allPlans = getLocalPlans();
+                    console.log('📁 使用本地计划数据:', allPlans.length);
+                    filterPlans();
+                    updateAnalytics(allPlans);
+                } catch (localError) {
+                    console.error('本地数据加载也失败:', localError);
+                    showError('加载失败，请检查网络连接');
+                    showLoading(false);
+                } else {
+                    showLoading(false);
+                }
+            }
+        }
+
+
+        // 筛选计划
+        function filterPlans() {
+            const searchInput = document.getElementById('searchInput');
+            searchTerm = searchInput.value.toLowerCase().trim();
+
+            filteredPlans = allPlans.filter(plan => {
+                // 搜索筛选
+                const nameMatch = plan.name.toLowerCase().includes(searchTerm);
+                const descMatch = (plan.notes || '').toLowerCase().includes(searchTerm);
+
+                // 难度筛选
+                const difficultyMatch = currentFilter === 'all' || plan.difficulty === currentFilter;
+
+                return (nameMatch || descMatch) && difficultyMatch;
+            });
+
+            renderPlans(filteredPlans);
+            // 🆕 传递filteredPlans给updateAnalytics，因为我们想显示筛选后的统计
+            updateAnalytics(filteredPlans);
+        }
+
+        // 切换筛选显示
+        function toggleFilters() {
+            const filterTags = document.getElementById('filterTags');
+            const isVisible = filterTags.style.display !== 'none';
+            filterTags.style.display = isVisible ? 'none' : 'flex';
+        }
+
+        // 清除筛选
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            setActiveFilter('all');
+            filterPlans();
+        }
+
+        // 渲染计划列表
+        function renderPlans(plans) {
+            const plansGrid = document.getElementById('plansGrid');
+            const plansCount = document.getElementById('plansCount');
+            const emptyState = document.getElementById('emptyState');
+
+            // 更新计数
+            plansCount.textContent = `共 ${plans.length} 个计划`;
+
+            if (plans.length === 0) {
+                emptyState.style.display = 'block';
+                plansGrid.innerHTML = '';
+                plansGrid.appendChild(emptyState);
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            plansGrid.innerHTML = '';
+
+            plans.forEach(plan => {
+                const planCard = createPlanCard(plan);
+                plansGrid.appendChild(planCard);
+            });
+        }
+
+        // 创建计划卡片（使用新的数据字段）
+        function createPlanCard(plan) {
+            const card = document.createElement('div');
+            card.className = 'plan-card';
+
+            // 获取难度文本
+            const difficultyText = getDifficultyText(plan.difficulty);
+
+            // 🆕 使用后端提供的新状态数据
+            const statusText = {
+                'not-started': '未开始',
+                'in-progress': '进行中',
+                'completed': '已完成'
+            };
+
+            const statusColor = {
+                'not-started': 'gray',
+                'in-progress': 'blue',
+                'completed': 'green'
+            };
+
+            // 获取完成状态（使用简化后的函数）
+            const completionData = getCompletionStatus(plan);
+
+            // 格式化创建时间
+            const createdDate = plan.createdAt ?
+                new Date(plan.createdAt).toLocaleDateString('zh-CN') : '未知';
+
+            card.innerHTML = `
+                <div class="plan-header">
+                    <div class="plan-icon">💪</div>
+                    <div class="plan-info">
+                        <span class="plan-name">${plan.name || '未命名计划'}</span>
+                        <div class="plan-meta">
+                            <span class="plan-meta-item">⏱️ ${plan.duration || 0}分钟</span>
+                            <span class="plan-meta-item">🎯 ${plan.exerciseCount || 0}个动作</span>
+                            <span class="plan-meta-item">📊 ${difficultyText}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="plan-description">
+                    ${plan.notes || '暂无描述'}
+                </div>
+                <div class="completion-indicator">
+                    <div class="completion-bar">
+                        <div class="completion-fill" style="width: ${completionData.completionPercent}%"></div>
+                    </div>
+                    <div class="completion-text">
+                        ${completionData.completedSessions}/${completionData.totalSessions} 次 (${completionData.completionPercent}%)
+                    </div>
+                </div>
+                <div class="plan-actions">
+                    <span class="plan-date">创建时间: ${createdDate}</span>
+                    <span class="plan-status ${completionData.status}">${statusText[completionData.status]}</span>
+                </div>
+            `;
+
+            // 点击跳转到计划详情
+            card.addEventListener('click', () => {
+                const planId = plan.planId || plan.id;
+                console.log('点击计划卡片，计划ID:', planId, '计划对象:', plan);
+                if (!planId) {
+                    showToast('计划ID不存在，无法查看详情', 'error');
+                    return;
+                }
+                window.location.href = `plan-detail.html?id=${planId}`;
+            });
+
+            return card;
+        }
+
+        // 获取难度文本
+        function getDifficultyText(difficulty) {
+            const difficultyMap = {
+                'beginner': '初级',
+                'intermediate': '中级',
+                'advanced': '高级'
+            };
+            return difficultyMap[difficulty] || '未知';
+        }
+
+        // 获取完成状态（直接使用后端提供的数据）
+        function getCompletionStatus(plan) {
+            // 🆕 后端现在直接提供这些数据，直接返回
+            return {
+                status: plan.status || 'not-started',
+                completionPercent: plan.completionPercent || 0,
+                totalSessions: plan.totalSessions || 0,
+                completedSessions: plan.completedSessions || 0
+            };
+        }
+
+        // 获取本地保存的计划
+        function getLocalPlans() {
+            try {
+                return JSON.parse(localStorage.getItem('localPlans') || '[]');
+            } catch (error) {
+                console.error('获取本地计划失败:', error);
+                return [];
+            }
+        }
+
+        // 返回上一页
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'home.html';
+            }
+        }
+
+        // 创建新计划
+        function createNewPlan() {
+            window.location.href = 'manual-plan-creator.html';
+        }
+
+        // 显示加载状态
+        function showLoading(show) {
+            const loadingState = document.getElementById('loadingState');
+            const plansSection = document.querySelector('.plans-section');
+
+            if (show) {
+                loadingState.style.display = 'flex';
+                if (plansSection) plansSection.style.display = 'none';
+            } else {
+                loadingState.style.display = 'none';
+                if (plansSection) plansSection.style.display = 'block';
+            }
+        }
+
+        // 显示错误
+        function showError(message) {
+            const plansGrid = document.getElementById('plansGrid');
+            plansGrid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">❌</div>
+                    <div class="empty-title">加载失败</div>
+                    <div class="empty-desc">${message}</div>
+                </div>
+            `;
+        }
+
+        // 更新数据分析（利用后端提供的数据）
+        function updateAnalytics(plans) {
+            if (!plans || plans.length === 0) {
+                // 重置所有统计数据
+                document.getElementById('totalPlans').textContent = '0';
+                document.getElementById('completedPlans').textContent = '0';
+                document.getElementById('inProgressPlans').textContent = '0';
+                document.getElementById('completionRate').textContent = '0%';
+                document.getElementById('totalDuration').textContent = '0';
+                document.getElementById('avgDifficulty').textContent = '-';
+                return;
+            }
+
+            // 🆕 直接使用后端计算的状态数据
+            const totalPlans = plans.length;
+            const completedPlans = plans.filter(p => p.status === 'completed').length;
+            const inProgressPlans = plans.filter(p => p.status === 'in-progress').length;
+            const notStartedPlans = plans.filter(p => p.status === 'not-started').length;
+
+            // 计算完成率
+            const completionRate = totalPlans > 0 ? Math.round((completedPlans / totalPlans) * 100) : 0;
+
+            // 计算总时长和其他统计
+            let totalDuration = 0;
+            let difficultySum = 0;
+            let difficultyCount = 0;
+
+            plans.forEach(plan => {
+                // 累加总时长
+                if (plan.duration) {
+                    totalDuration += plan.duration;
+                }
+
+                // 计算平均难度
+                const difficultyValue = getDifficultyValue(plan.difficulty);
+                if (difficultyValue > 0) {
+                    difficultySum += difficultyValue;
+                    difficultyCount++;
+                }
+            });
+
+            // 计算平均难度
+            const avgDifficultyValue = difficultyCount > 0 ? difficultySum / difficultyCount : 0;
+            const avgDifficultyText = getDifficultyTextByValue(avgDifficultyValue);
+
+            // 更新页面显示
+            console.log('📊 统计数据更新完成:', {
+                totalPlans,
+                completedPlans,
+                inProgressPlans,
+                notStartedPlans,
+                completionRate: `${completionRate}%`,
+                totalDuration,
+                avgDifficultyText
+            });
+
+            document.getElementById('totalPlans').textContent = totalPlans;
+            document.getElementById('completedPlans').textContent = completedPlans;
+            document.getElementById('inProgressPlans').textContent = inProgressPlans;
+            document.getElementById('completionRate').textContent = `${completionRate}%`;
+            document.getElementById('totalDuration').textContent = totalDuration;
+            document.getElementById('avgDifficulty').textContent = avgDifficultyText;
+        }
+
+        // 获取难度数值 (用于计算平均值)
+        function getDifficultyValue(difficulty) {
+            const difficultyMap = {
+                'beginner': 1,
+                'intermediate': 2,
+                'advanced': 3
+            };
+            return difficultyMap[difficulty] || 0;
+        }
+
+        // 根据数值获取难度文本
+        function getDifficultyTextByValue(value) {
+            if (value >= 2.5) return '高级';
+            if (value >= 1.5) return '中级';
+            if (value >= 0.5) return '初级';
+            return '-';
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'error' ? '#e74c3c' : '#00b894'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-size: 14px;
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
