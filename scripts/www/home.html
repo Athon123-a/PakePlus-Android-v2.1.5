@@ -510,36 +510,101 @@
             text-align: center;
         }
 
-        /* 最近训练 */
-        .recent-training {
+        /* 近期计划 */
+        .recent-plans {
             margin: 30px 0;
         }
 
-        .recent-list {
+        .section-header {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        .recent-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 16px;
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
             display: flex;
             align-items: center;
-            gap: 16px;
-            cursor: pointer;
+            gap: 8px;
+        }
+
+        .view-all-link {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #00D1FF;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
             transition: all 0.3s ease;
         }
 
-        .recent-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(0, 209, 255, 0.3);
-            transform: translateX(4px);
+        .view-all-link:hover {
+            color: #CCFF00;
+            transform: translateX(2px);
         }
 
-        .recent-icon {
+        .arrow {
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .view-all-link:hover .arrow {
+            transform: translateX(2px);
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .plan-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #CCFF00, #00D1FF);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .plan-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 209, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 209, 255, 0.15);
+        }
+
+        .plan-card:hover::before {
+            opacity: 1;
+        }
+
+        .plan-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .plan-icon {
             width: 48px;
             height: 48px;
             border-radius: 12px;
@@ -551,26 +616,91 @@
             flex-shrink: 0;
         }
 
-        .recent-info {
+        .plan-info {
             flex: 1;
         }
 
-        .recent-name {
-            font-size: 15px;
+        .plan-name {
+            font-size: 16px;
             font-weight: 600;
+            color: #ffffff;
             margin-bottom: 4px;
+            display: block;
         }
 
-        .recent-meta {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
+        .plan-meta {
             display: flex;
             gap: 12px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
         }
 
-        .recent-arrow {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 20px;
+        .plan-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .plan-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .plan-date {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .plan-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .plan-status.scheduled {
+            background: rgba(0, 209, 255, 0.2);
+            color: #00D1FF;
+        }
+
+        .plan-status.completed {
+            background: rgba(204, 255, 0, 0.2);
+            color: #CCFF00;
+        }
+
+        .plan-status.missed {
+            background: rgba(255, 77, 79, 0.2);
+            color: #FF4D4F;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
         }
         
         /* Daily Stats */
@@ -839,7 +969,26 @@
                 📅
             </button>
         </header>
-        
+
+        <!-- 近期计划 - 优先展示 -->
+        <section class="recent-plans">
+            <div class="section-header">
+                <h2 class="section-title">📅 近期计划</h2>
+                <a href="plans.html" class="view-all-link">
+                    <span>查看全部</span>
+                    <span class="arrow">›</span>
+                </a>
+            </div>
+            <div class="plans-grid" id="recentPlansGrid">
+                <!-- 近期计划将通过JavaScript动态生成 -->
+                <div class="empty-state" id="plansEmptyState">
+                    <div class="empty-icon">📅</div>
+                    <div class="empty-title">暂无近期计划</div>
+                    <div class="empty-desc">点击下方创建您的第一个训练计划</div>
+                </div>
+            </div>
+        </section>
+
         <!-- AI计划生成板块 -->
         <section class="ai-plan-generator">
             <div class="ai-generator-header">
@@ -929,11 +1078,22 @@
             </div>
         </section>
 
-        <!-- 最近训练 -->
-        <section class="recent-training">
-            <h2 class="section-title">最近训练</h2>
-            <div class="recent-list" id="recentList">
-                <!-- 最近训练项将通过JavaScript动态生成 -->
+        <!-- 近期计划 - 优先展示 -->
+        <section class="recent-plans">
+            <div class="section-header">
+                <h2 class="section-title">📅 近期计划</h2>
+                <a href="plans.html" class="view-all-link">
+                    <span>查看全部</span>
+                    <span class="arrow">›</span>
+                </a>
+            </div>
+            <div class="plans-grid" id="recentPlansGrid">
+                <!-- 近期计划将通过JavaScript动态生成 -->
+                <div class="empty-state" id="plansEmptyState">
+                    <div class="empty-icon">📅</div>
+                    <div class="empty-title">暂无近期计划</div>
+                    <div class="empty-desc">点击下方创建您的第一个训练计划</div>
+                </div>
             </div>
         </section>
         
@@ -994,9 +1154,13 @@
             <div class="nav-icon">📅</div>
             <div class="nav-label">日历</div>
         </a>
-        <a href="community.html" class="nav-item" id="navCommunity">
-            <div class="nav-icon">👥</div>
-            <div class="nav-label">社区</div>
+        <a href="plans.html" class="nav-item" id="navPlans">
+            <div class="nav-icon">📋</div>
+            <div class="nav-label">计划</div>
+        </a>
+        <a href="statistics.html" class="nav-item" id="navStatistics">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">统计</div>
         </a>
         <a href="profile.html" class="nav-item" id="navProfile">
             <div class="nav-icon">👤</div>
@@ -1222,53 +1386,173 @@
                             }
                         }
                         
-                        // 更新最近训练
-                        if (data.recentTrainings && data.recentTrainings.length > 0) {
-                            loadRecentTraining(data.recentTrainings);
-                        } else {
-                            loadRecentTraining([]);
-                        }
+                        // 更新近期计划
+                        loadRecentPlans();
                     }
                 } catch (error) {
                     console.error('加载首页数据失败:', error);
                     // 使用默认数据
-                    loadRecentTraining([]);
+                    loadRecentPlans();
                     loadStats();
                 }
             }
 
-            // 加载最近训练
-            function loadRecentTraining(trainings = []) {
-                const recentList = document.getElementById('recentList');
-                if (!recentList) return;
+            // 加载近期计划
+            async function loadRecentPlans() {
+                const plansGrid = document.getElementById('recentPlansGrid');
+                const emptyState = document.getElementById('plansEmptyState');
 
-                recentList.innerHTML = '';
-                
-                if (trainings.length === 0) {
-                    recentList.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); padding: 20px;">暂无最近训练记录</div>';
-                    return;
+                if (!plansGrid) return;
+
+                try {
+                    // 获取未来7天的计划
+                    const today = new Date();
+                    const plansPromises = [];
+
+                    // 获取最近7天的计划
+                    for (let i = 0; i < 7; i++) {
+                        const date = new Date(today);
+                        date.setDate(today.getDate() + i);
+                        const dateStr = date.toISOString().split('T')[0];
+                        plansPromises.push(API.getDayPlans(dateStr).catch(error => {
+                            console.warn(`获取日期 ${dateStr} 的计划失败:`, error);
+                            return { code: 200, data: { plans: [] } };
+                        }));
+                    }
+
+                    const plansResults = await Promise.all(plansPromises);
+                    const recentPlans = [];
+
+                    // 处理结果
+                    plansResults.forEach((result, index) => {
+                        if (result.code === 200 && result.data.plans && result.data.plans.length > 0) {
+                            const date = new Date(today);
+                            date.setDate(today.getDate() + index);
+
+                            result.data.plans.forEach(plan => {
+                                console.log('处理计划数据:', plan);
+                                const planData = {
+                                    ...plan,
+                                    date: date.toISOString().split('T')[0],
+                                    displayDate: date.toLocaleDateString('zh-CN', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        weekday: 'short'
+                                    })
+                                };
+                                console.log('构造的计划数据:', planData);
+                                recentPlans.push(planData);
+                            });
+                        }
+                    });
+
+                    // 如果没有真实数据，使用测试数据
+                    if (recentPlans.length === 0) {
+                        console.log('没有真实计划数据，使用测试数据');
+                        recentPlans = [
+                            {
+                                planId: 'test-plan-1',
+                                planName: '全身力量训练',
+                                time: '07:00',
+                                status: 'pending',
+                                duration: 45,
+                                date: new Date().toISOString().split('T')[0],
+                                displayDate: '今天'
+                            },
+                            {
+                                planId: 'test-plan-2',
+                                planName: '上肢专项训练',
+                                time: '19:00',
+                                status: 'pending',
+                                duration: 30,
+                                date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                                displayDate: '明天'
+                            }
+                        ];
+                    }
+
+                    // 限制显示数量，最多显示6个
+                    const displayPlans = recentPlans.slice(0, 6);
+
+                    console.log('最终显示的计划:', displayPlans);
+
+                    if (displayPlans.length === 0) {
+                        emptyState.style.display = 'block';
+                        plansGrid.innerHTML = '';
+                        plansGrid.appendChild(emptyState);
+                        return;
+                    }
+
+                    emptyState.style.display = 'none';
+                    plansGrid.innerHTML = '';
+
+                    displayPlans.forEach(plan => {
+                        const planCard = createPlanCard(plan);
+                        plansGrid.appendChild(planCard);
+                    });
+
+                } catch (error) {
+                    console.error('加载近期计划失败:', error);
+                    // 显示空状态
+                    emptyState.style.display = 'block';
+                    plansGrid.innerHTML = '';
+                    plansGrid.appendChild(emptyState);
+                }
+            }
+
+            // 创建计划卡片
+            function createPlanCard(plan) {
+                const card = document.createElement('div');
+                card.className = 'plan-card';
+
+                // 确定状态
+                let statusText = '计划中';
+                let statusClass = 'scheduled';
+
+                if (plan.status === 'completed') {
+                    statusText = '已完成';
+                    statusClass = 'completed';
+                } else if (plan.status === 'missed') {
+                    statusText = '已跳过';
+                    statusClass = 'missed';
                 }
 
-                trainings.forEach(training => {
-                    const item = document.createElement('div');
-                    item.className = 'recent-item';
-                    item.innerHTML = `
-                        <div class="recent-icon">${training.icon || '💪'}</div>
-                        <div class="recent-info">
-                            <div class="recent-name">${training.planName || '训练'}</div>
-                            <div class="recent-meta">
-                                <span>${training.time || ''}</span>
-                                <span>·</span>
-                                <span>${training.duration || 0}分钟</span>
+                card.innerHTML = `
+                    <div class="plan-header">
+                        <div class="plan-icon">💪</div>
+                        <div class="plan-info">
+                            <span class="plan-name">${plan.planName || '训练计划'}</span>
+                            <div class="plan-meta">
+                                <span class="plan-meta-item">⏱️ ${plan.duration || 30}分钟</span>
+                                <span class="plan-meta-item">🎯 ${plan.exercises || 0}个动作</span>
                             </div>
                         </div>
-                        <div class="recent-arrow">›</div>
-                    `;
-                    item.addEventListener('click', () => {
-                        window.location.href = 'calendar.html';
-                    });
-                    recentList.appendChild(item);
+                    </div>
+                    <div class="plan-actions">
+                        <span class="plan-date">${plan.displayDate}</span>
+                        <span class="plan-status ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+
+                // 点击跳转到计划详情页面
+                card.addEventListener('click', () => {
+                    const targetPlanId = plan.planId || plan.id;
+                    const calendarId = plan.id || plan.calendarId; // 日历计划的ID
+                    console.log('点击计划卡片:', plan);
+                    console.log('跳转到计划详情，planId:', targetPlanId, 'calendarId:', calendarId);
+                    if (targetPlanId && targetPlanId !== 'undefined') {
+                        const url = `plan-detail.html?id=${targetPlanId}`;
+                        if (calendarId && calendarId !== 'undefined') {
+                            url += `&calendarId=${calendarId}`;
+                        }
+                        window.location.href = url;
+                    } else {
+                        console.error('计划ID无效:', plan);
+                        alert('无法查看计划详情：计划ID无效');
+                    }
                 });
+
+                return card;
             }
 
             // 加载统计数据（备用）
@@ -1293,6 +1577,20 @@
             // 初始化
             loadHomeData();
 
+            // 当页面重新获得焦点时刷新数据（用户从其他页面返回）
+            window.addEventListener('focus', function() {
+                console.log('主页重新获得焦点，刷新近期计划数据');
+                loadRecentPlans();
+            });
+
+            // 当页面变得可见时刷新数据（从后台切换回来）
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log('页面变得可见，刷新近期计划数据');
+                    loadRecentPlans();
+                }
+            });
+
             // 导航栏高亮当前页面
             const currentPage = window.location.pathname.split('/').pop() || 'home.html';
             const navItems = document.querySelectorAll('.nav-item');
@@ -1307,3 +1605,4 @@
     </script>
 </body>
 </html>
+
