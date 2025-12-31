@@ -311,6 +311,37 @@ async function getUserStats(period = 'all') {
     return get('/user/stats', { period });
 }
 
+/**
+ * 同步用户数据到云端
+ * @param {Object} data - 要同步的数据
+ * @param {string} dataType - 数据类型 (plans, exercises, settings等)
+ */
+async function syncUserData(data, dataType) {
+    return post('/user/sync', {
+        data,
+        dataType,
+        timestamp: new Date().toISOString()
+    });
+}
+
+/**
+ * 从云端获取用户数据
+ * @param {string} dataType - 数据类型
+ * @param {string} lastSync - 最后同步时间
+ */
+async function getUserData(dataType, lastSync = null) {
+    const params = { dataType };
+    if (lastSync) params.lastSync = lastSync;
+    return get('/user/data', params);
+}
+
+/**
+ * 获取数据同步状态
+ */
+async function getSyncStatus() {
+    return get('/user/sync/status');
+}
+
 // ==================== 训练计划模块 ====================
 
 /**
@@ -485,7 +516,7 @@ async function getStatistics(period = 'all', type = 'all') {
  * @param {string} params.planId - 计划ID筛选
  */
 async function getTrainingSessions(params = {}) {
-    return get('/statistics/sessions', params);
+    return get('/training/sessions', params);
 }
 
 /**
@@ -635,6 +666,13 @@ async function getHomeData() {
     return get('/home');
 }
 
+/**
+ * API健康检查
+ */
+async function healthCheck() {
+    return get('/health', {}, false);
+}
+
 // ==================== 通知模块 ====================
 
 /**
@@ -681,6 +719,9 @@ const API = {
     updateUserProfile,
     uploadAvatar,
     getUserStats,
+    syncUserData,
+    getUserData,
+    getSyncStatus,
 
     // 训练计划
     createPlan,
@@ -730,7 +771,10 @@ const API = {
     // 通知
     getNotifications,
     markNotificationRead,
-    markAllNotificationsRead
+    markAllNotificationsRead,
+
+    // 系统
+    healthCheck
 };
 
 // 挂载到window对象供全局使用
