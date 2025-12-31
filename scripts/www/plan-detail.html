@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计划详情 - 健身助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'HarmonyOS Sans', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #CCFF00, #00D1FF);
+            color: #121212;
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(204, 255, 0, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 计划信息卡片 */
+        .plan-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #CCFF00, #00D1FF);
+        }
+
+        .plan-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .plan-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(0, 209, 255, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .plan-info h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .plan-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .plan-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* 统计信息 */
+        .plan-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00D1FF;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        /* 动作列表 */
+        .exercises-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .exercises-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .exercise-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 209, 255, 0.3);
+        }
+
+        .exercise-index {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(0, 209, 255, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #00D1FF;
+            flex-shrink: 0;
+        }
+
+        .exercise-info {
+            flex: 1;
+        }
+
+        .exercise-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .exercise-details {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            gap: 12px;
+        }
+
+        .exercise-notes {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #00D1FF;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 错误状态 */
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .error-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .error-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            min-width: 0;
+        }
+
+        .nav-item:hover {
+            color: #00D1FF;
+        }
+
+        .nav-item.active {
+            color: #CCFF00;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .plan-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .exercise-item {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .plan-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1 class="header-title">计划详情</h1>
+            <div class="header-actions">
+                <button class="action-btn secondary" onclick="editPlan()">
+                    <span>✏️</span>
+                    编辑
+                </button>
+                <button class="action-btn primary" onclick="startTraining()">
+                    <span>🚀</span>
+                    开始训练
+                </button>
+            </div>
+        </header>
+
+        <!-- 加载状态 -->
+        <div id="loadingState" class="loading">
+            <div class="loading-spinner"></div>
+            <span>加载计划详情中...</span>
+        </div>
+
+        <!-- 错误状态 -->
+        <div id="errorState" class="error-state" style="display: none;">
+            <div class="error-icon">❌</div>
+            <div class="error-title">加载失败</div>
+            <div class="error-desc">无法获取计划详情，请稍后重试</div>
+        </div>
+
+        <!-- 计划详情内容 -->
+        <div id="planContent" style="display: none;">
+            <!-- 计划基本信息 -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-icon" id="planIcon">💪</div>
+                    <div class="plan-info">
+                        <h1 id="planTitle">加载中...</h1>
+                        <div class="plan-meta">
+                            <span id="planDuration">⏱️ --分钟</span>
+                            <span id="planExercises">🎯 --个动作</span>
+                            <span id="planDifficulty">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="planDescription" class="plan-description">
+                    <!-- 计划描述 -->
+                </div>
+
+                <!-- 计划统计 -->
+                <div class="plan-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSets">--</div>
+                        <div class="stat-label">总组数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalReps">--</div>
+                        <div class="stat-label">总次数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="estCalories">--</div>
+                        <div class="stat-label">预估卡路里</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="difficulty">--</div>
+                        <div class="stat-label">难度等级</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 训练动作列表 -->
+            <section class="exercises-section">
+                <h2 class="section-title">📋 训练动作</h2>
+                <div id="exercisesList" class="exercises-list">
+                    <!-- 动作列表将通过JavaScript动态生成 -->
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-item">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">首页</div>
+        </a>
+        <a href="calendar.html" class="nav-item">
+            <div class="nav-icon">📅</div>
+            <div class="nav-label">日历</div>
+        </a>
+        <a href="plans.html" class="nav-item">
+            <div class="nav-icon">📋</div>
+            <div class="nav-label">计划</div>
+        </a>
+        <a href="statistics.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">统计</div>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">我的</div>
+        </a>
+    </nav>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+
+    <script>
+        let currentPlan = null;
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPlanDetail();
+        });
+
+        // 获取URL参数
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 加载计划详情
+        async function loadPlanDetail() {
+            const planId = getUrlParameter('id');
+            console.log('获取到的计划ID参数:', planId);
+            console.log('URL参数:', window.location.search);
+
+            if (!planId || planId === 'undefined' || planId === 'null') {
+                console.error('计划ID参数无效:', planId);
+                showError('缺少有效的计划ID参数');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                console.log('加载计划详情:', planId);
+                const response = await API.getPlanDetail(planId);
+
+                if (response.code === 200) {
+                    currentPlan = response.data;
+                    renderPlanDetail(currentPlan);
+                    showLoading(false);
+                } else {
+                    throw new Error(response.message || '获取计划详情失败');
+                }
+            } catch (error) {
+                console.error('加载计划详情失败:', error);
+                showError(error.message || '加载失败，请稍后重试');
+            }
+        }
+
+        // 渲染计划详情
+        function renderPlanDetail(plan) {
+            // 设置计划基本信息
+            document.getElementById('planTitle').textContent = plan.name || '未命名计划';
+            document.getElementById('planDuration').textContent = `⏱️ ${plan.duration || 0}分钟`;
+            document.getElementById('planExercises').textContent = `🎯 ${plan.exercises?.length || 0}个动作`;
+            document.getElementById('planDifficulty').textContent = getDifficultyText(plan.difficulty);
+
+            // 设置描述
+            const description = plan.notes || '暂无描述';
+            document.getElementById('planDescription').textContent = description;
+
+            // 计算统计信息
+            const stats = calculatePlanStats(plan.exercises || []);
+            document.getElementById('totalSets').textContent = stats.totalSets;
+            document.getElementById('totalReps').textContent = stats.totalReps;
+            document.getElementById('estCalories').textContent = stats.estCalories;
+            document.getElementById('difficulty').textContent = getDifficultyText(plan.difficulty);
+
+            // 渲染动作列表
+            renderExercises(plan.exercises || []);
+
+            // 显示内容
+            document.getElementById('planContent').style.display = 'block';
+        }
+
+        // 计算计划统计信息
+        function calculatePlanStats(exercises) {
+            let totalSets = 0;
+            let totalReps = 0;
+            let estCalories = 0;
+
+            exercises.forEach(exercise => {
+                totalSets += parseInt(exercise.sets) || 0;
+                // 估算次数（如果是"10次"格式，取数字部分）
+                const repsStr = exercise.reps || '';
+                const repsMatch = repsStr.match(/(\d+)/);
+                if (repsMatch) {
+                    totalReps += parseInt(repsMatch[1]) || 0;
+                }
+            });
+
+            // 估算卡路里消耗 (粗略计算)
+            estCalories = Math.round(totalSets * 10 + totalReps * 2);
+
+            return {
+                totalSets,
+                totalReps,
+                estCalories
+            };
+        }
+
+        // 获取难度文本
+        function getDifficultyText(difficulty) {
+            const difficultyMap = {
+                'beginner': '初级',
+                'intermediate': '中级',
+                'advanced': '高级'
+            };
+            return difficultyMap[difficulty] || difficulty || '未知';
+        }
+
+        // 渲染动作列表
+        function renderExercises(exercises) {
+            const exercisesList = document.getElementById('exercisesList');
+
+            if (exercises.length === 0) {
+                exercisesList.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); padding: 20px;">暂无训练动作</div>';
+                return;
+            }
+
+            exercisesList.innerHTML = exercises.map((exercise, index) => `
+                <div class="exercise-item">
+                    <div class="exercise-index">${index + 1}</div>
+                    <div class="exercise-info">
+                        <div class="exercise-name">${exercise.name || '未命名动作'}</div>
+                        <div class="exercise-details">
+                            <span>${exercise.sets || 0}组 × ${exercise.reps || ''}</span>
+                            <span>休息${exercise.rest || 60}秒</span>
+                        </div>
+                        ${exercise.notes ? `<div class="exercise-notes">${exercise.notes}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 返回上一页
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'home.html';
+            }
+        }
+
+        // 编辑计划
+        function editPlan() {
+            if (currentPlan && currentPlan.id) {
+                // 跳转到计划编辑页面（暂时跳转到创建页面）
+                window.location.href = `manual-plan-creator.html?edit=${currentPlan.id}`;
+            } else {
+                showToast('无法编辑此计划', 'error');
+            }
+        }
+
+        // 开始训练
+        function startTraining() {
+            console.log('开始训练，当前计划:', currentPlan);
+            if (currentPlan && (currentPlan.planId || currentPlan.id)) {
+                // 跳转到训练页面，传递计划ID和日历ID
+                const planId = currentPlan.planId || currentPlan.id;
+                const urlParams = new URLSearchParams(window.location.search);
+                const calendarId = urlParams.get('calendarId');
+
+                let url = `training.html?planId=${planId}`;
+                if (calendarId) {
+                    url += `&calendarId=${calendarId}`;
+                }
+
+                console.log('跳转到训练页面，planId:', planId, 'calendarId:', calendarId);
+                window.location.href = url;
+            } else {
+                console.error('无法开始训练，计划数据不完整:', currentPlan);
+                showToast('无法开始训练：计划数据不完整', 'error');
+            }
+        }
+
+        // 显示加载状态
+        function showLoading(show) {
+            const loadingState = document.getElementById('loadingState');
+            const planContent = document.getElementById('planContent');
+
+            if (show) {
+                loadingState.style.display = 'flex';
+                planContent.style.display = 'none';
+            } else {
+                loadingState.style.display = 'none';
+            }
+        }
+
+        // 显示错误状态
+        function showError(message) {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const errorDesc = document.querySelector('.error-desc');
+
+            loadingState.style.display = 'none';
+            errorDesc.textContent = message;
+            errorState.style.display = 'block';
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'success') {
+            // 简单的toast实现
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'error' ? '#e74c3c' : '#00b894'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-size: 14px;
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
